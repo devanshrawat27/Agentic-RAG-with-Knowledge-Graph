@@ -43,6 +43,11 @@ traversal must be scoped by the authenticated `user_id`. Never return another
 user's data. Auth is built as its own branch/PR so it never blocks the core
 pipeline.
 
+**Frontend design is not decided yet.** Until Phase E, the frontend is a plain,
+minimal **testing UI only** (bare signup/login forms that redirect to
+`/dashboard` on success). Do not do design/styling work in Phase A — the real UI
+is built later by the team (see `docs/IMPLEMENTATION_PLAN.md`, Phase E).
+
 ## Draft schema (pending team review)
 
 Entity/relationship types in `docs/GRAPH_SCHEMA.md` are a **draft**, not locked.
@@ -118,6 +123,24 @@ Before writing or pushing any code, follow this order **every time**:
 
 A merge must leave `main` in a working state (boots + `/health` responds +
 frontend builds). If it doesn't, do not merge.
+
+## Time budget & quality bar
+
+The project has a **~5 month (about 20 week)** runway — more than the 12-week
+roadmap. Extra time is **for quality and buffer, not for adding scope**.
+
+- **Build it properly, not fast.** We have time, so favour correctness,
+  testing, and clean structure over rushing a feature out.
+- **Still one step at a time.** Having time is **not** permission to build
+  everything at once. Extra time goes into doing each step well and re-testing,
+  never into parallel-building the whole app.
+- **Do not over-engineer.** Quality means the locked architecture done well —
+  not new tools, extra features, or gold-plating. No silent scope creep.
+- **Protect the core.** Spend the most effort on the **Verifier** (core
+  contribution) and the evaluation — that is what the project is judged on.
+- **Leave buffer.** Do not schedule work to the last week; keep slack for
+  integration bugs and the final report/demo.
+- Follow `docs/IMPLEMENTATION_PLAN.md` for the exact phase/step order.
 
 ## Current status
 
