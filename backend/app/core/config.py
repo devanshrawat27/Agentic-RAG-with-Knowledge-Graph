@@ -10,8 +10,11 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_BACKEND_DIR = Path(__file__).resolve().parents[1]
-_ENV_FILE = _BACKEND_DIR / ".env"
+# config.py is at backend/app/core/config.py -> parents[2] is backend/,
+# parents[3] is the repo root.
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
+_REPO_ROOT = _BACKEND_DIR.parent
+_ENV_FILE = _REPO_ROOT / ".env"
 
 
 class Settings(BaseSettings):
