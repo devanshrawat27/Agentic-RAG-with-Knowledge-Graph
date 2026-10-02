@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { verifyEmail } from "@/lib/api";
+import { Card, pageClass } from "@/components/ui";
 
 function VerifyInner() {
   const params = useSearchParams();
@@ -14,7 +15,7 @@ function VerifyInner() {
   useEffect(() => {
     if (!token) {
       setStatus("error");
-      setMessage("Missing verification token.");
+      setMessage("This verification link is missing or invalid.");
       return;
     }
     verifyEmail(token)
@@ -28,22 +29,31 @@ function VerifyInner() {
       });
   }, [token]);
 
+  const isError = status === "error";
+
   return (
-    <div className="max-w-sm text-center space-y-3">
-      <h1 className="text-2xl font-semibold">Email verification</h1>
-      {status === "loading" && <p className="text-neutral-600">Verifying...</p>}
-      {status !== "loading" && <p className="text-neutral-600">{message}</p>}
-      <Link href="/login" className="text-sm hover:underline">
-        Back to sign in
-      </Link>
-    </div>
+    <Card
+      title={status === "loading" ? "Verifying..." : "Email verification"}
+      subtitle={status === "ok" ? message : undefined}
+    >
+      {isError && (
+        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {message}
+        </p>
+      )}
+      <p className="text-center text-sm text-neutral-500">
+        <Link href="/login" className="font-medium text-neutral-900 hover:underline">
+          Back to sign in
+        </Link>
+      </p>
+    </Card>
   );
 }
 
 export default function VerifyEmailPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <Suspense fallback={<p>Loading...</p>}>
+    <main className={pageClass}>
+      <Suspense fallback={null}>
         <VerifyInner />
       </Suspense>
     </main>
