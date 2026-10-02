@@ -26,6 +26,9 @@ dependencies = [
     "sentence-transformers>=3.3",
     "python-multipart>=0.0.20",
     "httpx>=0.28",
+    "pyjwt>=2.9",
+    "bcrypt>=4.2",
+    "email-validator>=2.2",
 ]
 
 [tool.setuptools.packages.find]

@@ -30,6 +30,19 @@ Do not silently substitute a different tool. If you identify a clearly better
 technical choice for the same goal, say so, explain why, and wait for a decision
 before switching.
 
+## Added scope: authentication & per-user isolation (NOT in original roadmap)
+
+Beyond the roadmap, the app includes a **user-accounts layer** so each user has
+their own documents, chats, and history (ChatGPT-style), fully isolated from
+other users. This is an application-layer feature; it does **not** change any
+locked architecture decision. Details in `docs/APP_FLOW.md` and
+`docs/DATA_MODEL.md`.
+
+Isolation is a hard rule: every Postgres query, ChromaDB search, and Neo4j
+traversal must be scoped by the authenticated `user_id`. Never return another
+user's data. Auth is built as its own branch/PR so it never blocks the core
+pipeline.
+
 ## Draft schema (pending team review)
 
 Entity/relationship types in `docs/GRAPH_SCHEMA.md` are a **draft**, not locked.
@@ -109,8 +122,10 @@ frontend builds). If it doesn't, do not merge.
 ## Current status
 
 Phase 1 scaffolding is complete (backend + frontend + docker-compose + schema
-doc), committed and pushed. Phase 2 (ingestion + agents) has **not** started —
-hold until the team confirms the graph schema and gives the go-ahead.
+doc), committed and pushed. Auth/per-user-isolation scaffolding has started
+(security utils, DB models, `/api/auth` router — email delivery stubbed).
+Phase 2 (ingestion + agents) has **not** started — hold until the team confirms
+the graph schema and gives the go-ahead.
 
 ## Open items (resolve when reached; no need to block)
 

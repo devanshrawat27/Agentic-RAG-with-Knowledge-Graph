@@ -50,6 +50,23 @@ class Settings(BaseSettings):
     # --- App ---
     app_host: str = "0.0.0.0"
     app_port: int = 8000
+    frontend_base_url: str = "http://localhost:3000"
+
+    # --- Auth ---
+    # CHANGE THIS in production; keep it out of version control (set in .env).
+    jwt_secret: str = "dev-insecure-secret-change-me"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 1 day
+    reset_token_expire_minutes: int = 30
+    auth_cookie_name: str = "access_token"
+
+    # --- Email (verification / password reset) ---
+    # Leave empty to use dev mode (reset/verify links are logged to console).
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "no-reply@agentic-rag.local"
 
     @property
     def sqlalchemy_url(self) -> str:
