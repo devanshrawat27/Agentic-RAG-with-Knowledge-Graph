@@ -29,6 +29,7 @@ original contribution and main hallucination-mitigation mechanism.
 | `docs/IMPLEMENTATION_PLAN.md` | Step-by-step build order (Phases A–F), checkpoints |
 | `docs/FLOW.md` | System flow: architecture, ingestion, query, frontend, evaluation |
 | `docs/APP_FLOW.md` | User-facing flow incl. auth (signup/login/reset), routes, isolation |
+| `docs/AUTH.md` | **Auth owner's guide**: what exists, what to build, what not to, how to test |
 | `docs/DATA_MODEL.md` | Data model + per-user isolation rules |
 | `docs/SETUP.md` | Dev quickstart + what credentials to provide |
 

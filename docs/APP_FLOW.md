@@ -10,6 +10,10 @@ chat + graph experience.
 > change any locked architecture decision (Neo4j, Qdrant, Gemini, pipeline
 > order, Verifier). It only adds a user-accounts layer (PostgreSQL) in front
 > of the existing pipeline.
+>
+> **If you are implementing the auth feature, read `docs/AUTH.md` first** — it
+> has the authoritative "what exists / what to build / what not to / how to
+> test" context. This file is the user-facing flow overview.
 
 ## Actors
 
@@ -247,12 +251,13 @@ Do this **as its own branch/PR**, independently testable, and only after (or
 alongside) the Phase 1/2 core — so it never blocks the core pipeline. Per
 `AGENTS.md`: one focused change per branch, test locally before merge.
 
-## Open decisions for auth (flag, resolve when reached)
+## Auth decisions (resolved)
 
-- **Email delivery:** real SMTP (Gmail app password / free provider) vs
-  dev-mode console logging of links. Dev console is enough for the demo;
-  real SMTP needed only if testing the full flow end to end.
-- **Session strategy:** httpOnly cookie session vs JWT. Cookie session is
-  simpler and more secure for a same-origin dashboard.
-- **User isolation:** **decided — fully per-user.** Each user has their own
-  documents, chunks, graph entities, chats, and history. No shared corpus.
+- **Email verification:** **mandatory** — login is blocked until verified.
+- **Email delivery:** dev-mode console logging of links by default (no SMTP
+  account needed); real SMTP can be added later via `SMTP_*` env vars.
+- **Session strategy:** **JWT in an httpOnly cookie** (not localStorage).
+- **User isolation:** **fully per-user.** Each user has their own documents,
+  chunks, graph entities, chats, and history. No shared corpus.
+
+See `docs/AUTH.md` for the implementation guide.
