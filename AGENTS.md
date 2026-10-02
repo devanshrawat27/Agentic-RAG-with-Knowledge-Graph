@@ -84,6 +84,28 @@ docker compose up --build
 - **Line endings:** `.gitattributes` normalizes to LF for text files.
 - **Git:** commit only when asked; stage only intended files; never commit secrets.
 
+## Git workflow (mandatory for every contributor/agent)
+
+Before writing or pushing any code, follow this order **every time**:
+
+1. **Pull first.** Before starting any work, pull the latest `main` into your
+   own branch: `git fetch origin` then `git pull origin main`. Never work on a
+   stale checkout.
+2. **Work in your own branch.** Never push directly to `main`. Create/use a
+   feature branch (e.g. `dev`, `varun`, `devansh`, or a focused branch name)
+   and do all work there.
+3. **Local test before merge.** Run the app locally and confirm nothing is
+   broken (backend import + `/health`, frontend `npm run build`) before
+   proposing a merge.
+4. **Merge carefully.** When merging, verify the change does **not break**
+   existing code — resolve conflicts deliberately, re-run the checks above
+   after resolving, and only then merge to `main`.
+5. **Small, scoped changes only.** Do **not** build the whole project at once.
+   Build exactly what was asked, nothing more. One focused change per branch/PR.
+
+A merge must leave `main` in a working state (boots + `/health` responds +
+frontend builds). If it doesn't, do not merge.
+
 ## Current status
 
 Phase 1 scaffolding is complete (backend + frontend + docker-compose + schema
