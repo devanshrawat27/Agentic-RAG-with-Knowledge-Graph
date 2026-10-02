@@ -147,6 +147,14 @@ Qdrant is a separate server both locally (Docker) and live (Cloud), so embedding
 persist across redeploys with no extra disk — that is why it was chosen over the
 embedded ChromaDB.
 
+**Auth cookie caveat (live).** Login sets an httpOnly cookie (`secure=False`
+locally, `SameSite=Lax`). Locally backend (`:8000`) and frontend (`:3000`) are
+same-host, so the Next.js middleware can read it. On live, if backend and
+frontend are on **different domains**, the cookie is cross-site and the
+middleware (which only checks cookie presence) won't see it. Fix at deploy
+time: put both behind one domain/subdomain, or proxy `/api` through the
+frontend, and set `secure=True`. Raise this before deploying.
+
 ## Build / run commands
 
 ### Backend (Windows PowerShell, from `backend/`)

@@ -1,5 +1,6 @@
 """Security primitives: password hashing, JWT sessions, one-time tokens."""
 
+import base64
 import hashlib
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -10,13 +11,23 @@ import jwt
 from app.core.config import get_settings
 
 
+def _prepare(password: str) -> bytes:
+    """Reduce any-length password to a fixed 44-byte value for bcrypt.
+
+    bcrypt silently ignores input past 72 bytes; pre-hashing with SHA-256
+    (base64-encoded) avoids that limit and any truncation surprises.
+    """
+    digest = hashlib.sha256(password.encode("utf-8")).digest()
+    return base64.b64encode(digest)
+
+
 def hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return bcrypt.hashpw(_prepare(password), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(password: str, password_hash: str) -> bool:
     try:
-        return bcrypt.checkpw(password.encode("utf-8"), password_hash.encode("utf-8"))
+        return bcrypt.checkpw(_prepare(password), password_hash.encode("utf-8"))
     except (ValueError, TypeError):
         return False
 
