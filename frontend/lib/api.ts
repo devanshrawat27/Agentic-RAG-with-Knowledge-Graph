@@ -16,6 +16,30 @@ export interface UserPublic {
   is_verified: boolean;
 }
 
+function readDetail(detail: unknown): string | undefined {
+  if (typeof detail === "string" && detail) return detail;
+
+  if (Array.isArray(detail)) {
+    const messages = detail
+      .map((item) => {
+        if (typeof item === "string") return item;
+        if (item && typeof item === "object") {
+          const field = Array.isArray(item.loc)
+            ? item.loc.filter((part: unknown) => part !== "body").join(".")
+            : "";
+          const msg = typeof item.msg === "string" ? item.msg : "";
+          if (!msg) return "";
+          return field ? `${field}: ${msg}` : msg;
+        }
+        return "";
+      })
+      .filter(Boolean);
+    if (messages.length) return messages.join("\n");
+  }
+
+  return undefined;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
@@ -29,7 +53,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = `Request failed: ${res.status}`;
     try {
       const body = await res.json();
-      if (body?.detail) detail = body.detail;
+      const parsed = readDetail(body?.detail);
+      if (parsed) detail = parsed;
     } catch {
       /* ignore */
     }
