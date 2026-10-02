@@ -116,6 +116,35 @@ lower bounds and the resolver currently pulls **LangChain 1.4.x / LangGraph 1.2.
 (1.x majors), plus `psycopg[binary]` v3 instead of psycopg2. Be aware of the 1.x
 API surface when writing agent/pipeline code.
 
+## Deployment & data stores (important)
+
+**Local (development):** data lives in Docker volumes + a local folder.
+
+| Store | Local location | Git? | Persistent? |
+|---|---|---|---|
+| PostgreSQL | Docker volume `pgdata` | no | yes |
+| Neo4j | Docker volume `neo4j-data` | no | yes |
+| ChromaDB | local `./chroma` (`CHROMA_PERSIST_DIR`) | no (ignored) | yes |
+
+**Live (deployment):** data must move to hosted stores so public users and
+redeploys don't lose it. Config is already env-driven (`pydantic-settings`), so
+**no code change is needed** — only `.env` values change.
+
+| Store | Hosted option (free tier) |
+|---|---|
+| PostgreSQL | Neon / Supabase / Render Postgres |
+| Neo4j | Neo4j Aura Free |
+| ChromaDB | **needs a persistent disk** (see below) |
+| Backend | Render / Railway (set env vars in the dashboard, never in git) |
+| Frontend | Vercel |
+| LLM / embeddings | Gemini API (already cloud) |
+
+**ChromaDB caveat (flag for team):** ChromaDB is embedded (locked decision), so
+on hosts with an ephemeral filesystem (Render/Railway free) embeddings are lost
+on redeploy. Options: attach a persistent disk (small paid/VPS) or deploy on a
+VPS with a Docker volume. This is an architectural decision — raise it before
+deploying; do not silently switch to a separate vector server (Qdrant).
+
 ## Build / run commands
 
 ### Backend (Windows PowerShell, from `backend/`)
