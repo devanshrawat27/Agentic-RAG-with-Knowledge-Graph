@@ -11,7 +11,46 @@ showing it. The **Verifier agent** (cross-checking each claim against retrieved
 evidence, looping back to the Retriever when unsupported) is the project's core
 original contribution and main hallucination-mitigation mechanism.
 
-See `README.md` for the full roadmap and `docs/GRAPH_SCHEMA.md` for the schema.
+## Project metadata
+
+- **Project ID:** CSE27-229 · B.Tech CSE, Graphic Era Hill University, Dehradun
+- **Mentor:** Kapil Rajput, Assistant Professor
+- **Team (4):** Varun Rana, Devansh Rawat, Siddhant Rawat, Dhruv Purohit
+- **Repo:** https://github.com/devanshrawat27/Agentic-RAG-with-Knowledge-Graph
+- **Dataset:** Contract Understanding Atticus Dataset (CUAD) + self-authored
+  sample documents
+
+## Documentation index
+
+| Doc | What it covers |
+|---|---|
+| `README.md` | Full project roadmap (Phases 1–3), problem statement, stack, alternatives |
+| `docs/GRAPH_SCHEMA.md` | Entity/relationship schema (**draft**, pending team review) |
+| `docs/IMPLEMENTATION_PLAN.md` | Step-by-step build order (Phases A–F), checkpoints |
+| `docs/FLOW.md` | System flow: architecture, ingestion, query, frontend, evaluation |
+| `docs/APP_FLOW.md` | User-facing flow incl. auth (signup/login/reset), routes, isolation |
+| `docs/DATA_MODEL.md` | Data model + per-user isolation rules |
+| `docs/SETUP.md` | Dev quickstart + what credentials to provide |
+
+## Feature set
+
+- Document ingestion: PDF/DOCX → chunking → embeddings → ChromaDB
+- Entity/relationship extraction via LLM prompting → Neo4j knowledge graph
+- Hybrid retrieval (vector + graph) for multi-hop questions
+- **Verification layer** that reduces hallucination (core differentiator)
+- Chat dashboard with source citations
+- Graph visualization of entities/documents an answer used
+- Three-stage evaluation (no-graph vs graph vs graph+verification)
+- (Added scope) user accounts + per-user isolation (ChatGPT-style history)
+
+## Alternatives considered (and why not chosen)
+
+- **Qdrant vs ChromaDB** — Qdrant needs a separate server; ChromaDB runs
+  embedded, one less moving part. Revisit only if multi-node scaling is needed.
+- **Dedicated NER model vs LLM-prompted extraction** — a trained NER model is
+  more accurate at scale but needs a separate training/fine-tuning step;
+  LLM prompting is faster to implement correctly given the team's LangChain
+  experience.
 
 ## Locked architecture decisions (do not change)
 
@@ -48,11 +87,25 @@ minimal **testing UI only** (bare signup/login forms that redirect to
 `/dashboard` on success). Do not do design/styling work in Phase A — the real UI
 is built later by the team (see `docs/IMPLEMENTATION_PLAN.md`, Phase E).
 
+## Phase naming (avoid confusion)
+
+Three documents use different labels for the same work. Use these as the
+canonical mapping:
+
+| Roadmap (`README.md`) | Plan (`IMPLEMENTATION_PLAN.md`) | What it is |
+|---|---|---|
+| Phase 1 (Weeks 1–4) | Phase C | Ingestion pipeline |
+| Phase 2 (Weeks 5–9) | Phase D | Multi-agent system + integration |
+| Phase 3 (Weeks 10–12) | Phase F | Evaluation, research, packaging |
+
+Auth/per-user isolation is an **added** line of work (Phase A in the plan); it
+is not part of the original roadmap phases.
+
 ## Draft schema (pending team review)
 
 Entity/relationship types in `docs/GRAPH_SCHEMA.md` are a **draft**, not locked.
-They must be agreed before Phase 2 extraction code is written — changing the
-schema later means re-running extraction on already-ingested documents.
+They must be agreed before extraction code is written — changing the schema
+later means re-running extraction on already-ingested documents.
 
 ## Dependency note (important)
 
@@ -95,8 +148,10 @@ docker compose up --build
   `.env`. All secrets/credentials are placeholders in `.env.example` — never
   commit real keys. App must boot and `/health` respond without credentials set.
 - **Backend package layout:** `app/agents/` (4 agents + `graph_state.py`),
-  `app/api/routes/` (FastAPI routers), `app/core/` (config + LLM/embedding/vector
-  factories), `app/db/` (Neo4j + Postgres clients), `app/ingestion/` (Phase 2).
+  `app/api/routes/` (FastAPI routers), `app/api/deps.py` (auth dependencies),
+  `app/core/` (config + security + email + LLM/embedding/vector factories),
+  `app/db/` (Neo4j + Postgres clients + ORM models), `app/schemas/` (Pydantic
+  request/response models), `app/ingestion/` (loader/chunker/embedder/extractor).
 - **No comments** unless they add meaning (interface/docstring headers and
   `TODO(phase-N)` markers are fine).
 - **Line endings:** `.gitattributes` normalizes to LF for text files.
@@ -127,28 +182,38 @@ frontend builds). If it doesn't, do not merge.
 ## Time budget & quality bar
 
 The project has a **~5 month (about 20 week)** runway — more than the 12-week
-roadmap. Extra time is **for quality and buffer, not for adding scope**.
+roadmap. That extra time is a real advantage: use it to **understand the system
+deeply and build quality**.
 
 - **Build it properly, not fast.** We have time, so favour correctness,
   testing, and clean structure over rushing a feature out.
 - **Still one step at a time.** Having time is **not** permission to build
-  everything at once. Extra time goes into doing each step well and re-testing,
-  never into parallel-building the whole app.
-- **Do not over-engineer.** Quality means the locked architecture done well —
-  not new tools, extra features, or gold-plating. No silent scope creep.
+  everything at once. Finish and verify each step, then move on. Extra time goes
+  into doing each step well and re-testing, not into parallel-building the app.
+- **Growth by understanding, not by rushing.** The scope can and should grow as
+  the team learns more — adding functionality is welcome when it comes from a
+  clear understanding of the problem, a deliberate decision (flagged per the
+  rules above), and a tested implementation. What we avoid is *unplanned* scope
+  creep, gold-plating, or swapping locked decisions without reason.
 - **Protect the core.** Spend the most effort on the **Verifier** (core
   contribution) and the evaluation — that is what the project is judged on.
 - **Leave buffer.** Do not schedule work to the last week; keep slack for
   integration bugs and the final report/demo.
-- Follow `docs/IMPLEMENTATION_PLAN.md` for the exact phase/step order.
+- Follow `docs/IMPLEMENTATION_PLAN.md` for the step order, and update it
+  deliberately when the plan changes.
 
 ## Current status
 
-Phase 1 scaffolding is complete (backend + frontend + docker-compose + schema
-doc), committed and pushed. Auth/per-user-isolation scaffolding has started
-(security utils, DB models, `/api/auth` router — email delivery stubbed).
-Phase 2 (ingestion + agents) has **not** started — hold until the team confirms
-the graph schema and gives the go-ahead.
+**Setup (Phase 0)** is complete: monorepo layout, backend + frontend skeleton,
+dependency install, docker-compose, and all design docs — committed and pushed.
+
+**Auth / per-user isolation (Phase A)** backend + frontend scaffolding is in
+place (security utils, DB models, `/api/auth` router, plain test UI), but has
+**not yet been tested end to end** (Postgres not started).
+
+**Ingestion and agents have not started.** Do not begin ingestion until the
+graph schema (`docs/GRAPH_SCHEMA.md`) is finalized by the team. Follow
+`docs/IMPLEMENTATION_PLAN.md` step by step.
 
 ## Open items (resolve when reached; no need to block)
 
