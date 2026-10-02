@@ -77,6 +77,8 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)) -> MessageResp
 
     raw = _issue_token(db, user.id, "verify", 60 * 24)
     send_verification_email(user.email, raw)
+    # Commit before responding so an immediate follow-up request sees the user.
+    db.commit()
     return MessageResponse(message="Account created. Check your email to verify.")
 
 
@@ -126,6 +128,8 @@ def verify_email(payload: TokenRequest, db: Session = Depends(get_db)) -> Messag
     if user is None:
         raise HTTPException(status_code=400, detail="Invalid token")
     user.is_verified = True
+    # Commit before responding so the next login sees is_verified=True.
+    db.commit()
     return MessageResponse(message="Email verified. You can now log in.")
 
 
@@ -138,6 +142,7 @@ def forgot_password(
     if user is not None:
         raw = _issue_token(db, user.id, "reset", settings.reset_token_expire_minutes)
         send_password_reset_email(user.email, raw)
+        db.commit()
     # Always the same response — never reveal whether the email is registered.
     return MessageResponse(
         message="If that email is registered, a reset link has been sent."
@@ -155,4 +160,5 @@ def reset_password(
     if user is None:
         raise HTTPException(status_code=400, detail="Invalid token")
     user.password_hash = hash_password(payload.new_password)
+    db.commit()
     return MessageResponse(message="Password updated. You can now log in.")
