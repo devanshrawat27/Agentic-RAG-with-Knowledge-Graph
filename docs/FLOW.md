@@ -55,8 +55,9 @@ Upload (PDF/DOCX)
                        ingestion/extractor.py
                             │
                             ▼
-                        Neo4j graph  (Vendor, Contract, Clause, Revision,
-                        Violation + SIGNED, CONTAINS, BREACHED, ...)
+                        Neo4j graph  (Document, Vendor, Contract, Clause,
+                        Revision, Violation + SIGNED, CONTAINS, BREACHED,
+                        REVISES, HAS_REVISION, MENTIONS — see GRAPH_SCHEMA.md)
                             │
                             ▼
                         PostgreSQL  (document record, status, chunk count)

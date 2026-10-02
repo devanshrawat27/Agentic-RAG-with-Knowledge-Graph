@@ -54,10 +54,12 @@ an API, not local training.
 **Team prep before Phase 1 starts:**
 - Everyone runs one basic RAG example end to end
 - Everyone writes and runs a few basic Cypher queries against a local Neo4j instance
-- Agree on the graph schema (entity types: Vendor, Contract, Clause, Revision,
-  Violation; relationship types: SIGNED, CONTAINS, COMMITTED, BREACHED,
-  REVISED_IN) before any extraction code is written — changing this mid-project
-  means re-running extraction on everything already ingested
+- Agree on the graph schema before any extraction code is written — changing
+  this mid-project means re-running extraction on everything already ingested.
+  The schema is now **locked v1** in `docs/GRAPH_SCHEMA.md` (entity types:
+  Document, Vendor, Contract, Clause, Revision, Violation, Person, Entity;
+  relationship types: SIGNED, CONTAINS, HAS_REVISION, REVISES, COMMITTED,
+  BREACHED, MENTIONS)
 
 ## 5. Phase 1 — Foundations & Ingestion Pipeline (Weeks 1–4)
 

@@ -59,11 +59,14 @@ No cross-user data anywhere.
 
 Goal: freeze the schema so extraction never has to be re-run.
 
-- [ ] B1. Team review of `docs/GRAPH_SCHEMA.md` → finalize entity/relationship types
-- [ ] B2. Update doc status from "pending review" to "locked"; commit
-- [ ] B3. Neo4j constraints/indexes (`CREATE CONSTRAINT` for entity ids)
+- [x] B1. Finalize entity/relationship types → `docs/GRAPH_SCHEMA.md` (**LOCKED v1**,
+       designed around the multi-hop vendor→violation→clause→revision path)
+- [x] B2. Doc status set to "locked"; committed
+- [ ] B3. Neo4j constraints/indexes (`CREATE CONSTRAINT` for entity ids) —
+       run as part of Phase C setup
 
-Checkpoint B: schema is locked and documented. Do not proceed until signed off.
+Checkpoint B: **schema is locked and documented** (done). If a real blocker
+appears later, raise it before changing — re-extraction is the cost.
 
 ---
 

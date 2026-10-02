@@ -25,7 +25,7 @@ original contribution and main hallucination-mitigation mechanism.
 | Doc | What it covers |
 |---|---|
 | `README.md` | Full project roadmap (Phases 1–3), problem statement, stack, alternatives |
-| `docs/GRAPH_SCHEMA.md` | Entity/relationship schema (**draft**, pending team review) |
+| `docs/GRAPH_SCHEMA.md` | Entity/relationship schema (**locked v1**) + Cypher constraints |
 | `docs/IMPLEMENTATION_PLAN.md` | Step-by-step build order (Phases A–F), checkpoints |
 | `docs/FLOW.md` | System flow: architecture, ingestion, query, frontend, evaluation |
 | `docs/APP_FLOW.md` | User-facing flow incl. auth (signup/login/reset), routes, isolation |
@@ -106,11 +106,13 @@ canonical mapping:
 Auth/per-user isolation is an **added** line of work (Phase A in the plan); it
 is not part of the original roadmap phases.
 
-## Draft schema (pending team review)
+## Graph schema (LOCKED v1)
 
-Entity/relationship types in `docs/GRAPH_SCHEMA.md` are a **draft**, not locked.
-They must be agreed before extraction code is written — changing the schema
-later means re-running extraction on already-ingested documents.
+Entity/relationship types in `docs/GRAPH_SCHEMA.md` are **locked v1** so
+ingestion can proceed. Every node carries `user_id`; typed edges carry
+`doc_id` + `chunk_id` for provenance. Changing the schema after ingestion means
+re-running extraction on all already-ingested documents — treat it as frozen;
+if a real blocker appears, raise it before changing.
 
 ## Dependency note (important)
 
@@ -251,9 +253,12 @@ dependency install, docker-compose, and all design docs — committed and pushed
 place (security utils, DB models, `/api/auth` router, plain test UI), but has
 **not yet been tested end to end** (Postgres not started).
 
-**Ingestion and agents have not started.** Do not begin ingestion until the
-graph schema (`docs/GRAPH_SCHEMA.md`) is finalized by the team. Follow
-`docs/IMPLEMENTATION_PLAN.md` step by step.
+**Graph schema is LOCKED v1** (`docs/GRAPH_SCHEMA.md`) — ingestion is no longer
+blocked on it.
+
+**Ingestion and agents have not started.** They can begin per
+`docs/IMPLEMENTATION_PLAN.md` (Phase C then D). The schema is frozen; if
+something needs changing, raise it before re-running extraction.
 
 ## Open items (resolve when reached; no need to block)
 
