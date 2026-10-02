@@ -89,6 +89,36 @@ npm run dev
 
 Dashboard: http://localhost:3000
 
+## 3b. Local LLM (Ollama) — for development
+
+The free Gemini tier allows only ~20 requests/day, which is not enough to
+extract a whole contract. Use **Ollama** locally for unlimited, offline
+extraction during development.
+
+> On this machine Ollama is installed portably at `D:\Ollama` (C: had almost no
+> space) with models on `D:\Ollama\models`. The user env vars `OLLAMA_MODELS`
+> and `PATH` are already set, so `ollama` works after a new shell.
+
+```powershell
+# start the server (keep it running)
+ollama serve
+
+# pull the model (once) — ~4.7 GB
+ollama pull llama3.1:8b
+```
+
+Then in `.env` set `LLM_PROVIDER=ollama` (and switch back to `gemini` for
+demos/production). Verify:
+
+```powershell
+ollama run llama3.1:8b "say hi"
+```
+
+Notes:
+- Local generation on CPU is **slow** (~1 min per chunk). Fine for dev; use
+  Gemini (or expect waits) for the demo.
+- The model files live on `D:\Ollama\models`, not on C:.
+
 ## 4. Testing the auth flow (Phase A)
 
 With Postgres running (Docker), the backend auto-creates its tables at startup.
