@@ -33,9 +33,9 @@ Thumbs.db
 # Docker / data
 *.log
 data/
-chroma/
 neo4j-data/
 pgdata/
+qdrant-storage/
 
 # Test / coverage
 .pytest_cache/

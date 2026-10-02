@@ -10,7 +10,7 @@ langchain-community>=0.3.14
 langchain-google-genai>=2.0.8
 langgraph>=0.2.61
 
-chromadb>=0.5.23
+qdrant-client>=1.12
 neo4j>=5.27
 psycopg[binary]>=3.2
 sqlalchemy>=2.0.36

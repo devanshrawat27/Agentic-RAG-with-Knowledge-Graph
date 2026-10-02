@@ -7,7 +7,7 @@ chat + graph experience.
 > **Scope note:** Authentication is **not** part of the original project
 > roadmap (`README.md` Phases 1–3). It is added here as an application-layer
 > feature so the product feels complete for the final demo. It does **not**
-> change any locked architecture decision (Neo4j, ChromaDB, Gemini, pipeline
+> change any locked architecture decision (Neo4j, Qdrant, Gemini, pipeline
 > order, Verifier). It only adds a user-accounts layer (PostgreSQL) in front
 > of the existing pipeline.
 
@@ -132,7 +132,7 @@ POST /api/auth/logout → clear session/cookie → redirect to /login
 User → /documents → drag & drop PDF/DOCX → POST /api/documents
       │
       ▼
-Backend: loader → chunker → embedder (ChromaDB)
+Backend: loader → chunker → embedder (Qdrant)
                          └→ extractor (LLM) → Neo4j
                          └→ metadata row (PostgreSQL), status = processing
       │
@@ -211,15 +211,14 @@ entities. This is the hard rule that shapes the whole data model.
 **Isolation extends into the other stores** (they stay document/knowledge
 stores, but every record is scoped by user):
 
-- **ChromaDB** — each collection/namespace is per-user (e.g.
-  `user_{user_id}_chunks`), or every chunk carries a `user_id` metadata
-  filter. No cross-user similarity search.
+- **Qdrant** — each collection is per-user (e.g. `user_{user_id}_chunks`), or
+  every point carries a `user_id` payload field. No cross-user similarity search.
 - **Neo4j** — every `Document` node is owned by a user; traversals always
   start from `(:Document {user_id: $uid})`. No query may cross user
   boundaries.
 - **PostgreSQL** — every query filters by the authenticated `user_id`.
 
-Postgres is the source of truth for ownership; ChromaDB and Neo4j mirror the
+Postgres is the source of truth for ownership; Qdrant and Neo4j mirror the
 same `user_id` so filtering stays consistent everywhere.
 
 ### Chat history behavior (ChatGPT-style)

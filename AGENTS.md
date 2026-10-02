@@ -34,7 +34,7 @@ original contribution and main hallucination-mitigation mechanism.
 
 ## Feature set
 
-- Document ingestion: PDF/DOCX → chunking → embeddings → ChromaDB
+- Document ingestion: PDF/DOCX → chunking → embeddings → Qdrant
 - Entity/relationship extraction via LLM prompting → Neo4j knowledge graph
 - Hybrid retrieval (vector + graph) for multi-hop questions
 - **Verification layer** that reduces hallucination (core differentiator)
@@ -45,8 +45,12 @@ original contribution and main hallucination-mitigation mechanism.
 
 ## Alternatives considered (and why not chosen)
 
-- **Qdrant vs ChromaDB** — Qdrant needs a separate server; ChromaDB runs
-  embedded, one less moving part. Revisit only if multi-node scaling is needed.
+- **ChromaDB vs Qdrant** — ChromaDB runs embedded (one less moving part) and was
+  the original pick. **Switched to Qdrant** because ChromaDB's embedded store
+  loses embeddings on redeploy on hosts with an ephemeral filesystem, and its
+  cloud tier is usage-based, whereas Qdrant offers a genuinely free-forever
+  hosted tier (4GB) and keeps data safe when live. Local setup pays for one
+  extra container (Qdrant) in exchange for a clean path to deployment.
 - **Dedicated NER model vs LLM-prompted extraction** — a trained NER model is
   more accurate at scale but needs a separate training/fine-tuning step;
   LLM prompting is faster to implement correctly given the team's LangChain
@@ -58,7 +62,7 @@ original contribution and main hallucination-mitigation mechanism.
 - **Verifier as core contribution:** every answer passes through the Verifier
 - **Pipeline order:** Planner → Retriever → Verifier → Answerer (Verifier may
   loop back to Retriever)
-- **Vector DB:** ChromaDB (embedded), not Qdrant
+- **Vector DB:** Qdrant (hosted free tier; local via Docker)
 - **LLM:** Google Gemini 2.0 Flash primary, Ollama + Llama 3.1 8B as zero-cost fallback
 - **Embeddings:** Gemini text-embedding-004 primary, HF `all-MiniLM-L6-v2` fallback
 - **Relational metadata:** PostgreSQL
@@ -77,7 +81,7 @@ other users. This is an application-layer feature; it does **not** change any
 locked architecture decision. Details in `docs/APP_FLOW.md` and
 `docs/DATA_MODEL.md`.
 
-Isolation is a hard rule: every Postgres query, ChromaDB search, and Neo4j
+Isolation is a hard rule: every Postgres query, Qdrant search, and Neo4j
 traversal must be scoped by the authenticated `user_id`. Never return another
 user's data. Auth is built as its own branch/PR so it never blocks the core
 pipeline.
@@ -118,32 +122,30 @@ API surface when writing agent/pipeline code.
 
 ## Deployment & data stores (important)
 
-**Local (development):** data lives in Docker volumes + a local folder.
+**Local (development):** data lives in Docker volumes.
 
 | Store | Local location | Git? | Persistent? |
 |---|---|---|---|
 | PostgreSQL | Docker volume `pgdata` | no | yes |
 | Neo4j | Docker volume `neo4j-data` | no | yes |
-| ChromaDB | local `./chroma` (`CHROMA_PERSIST_DIR`) | no (ignored) | yes |
+| Qdrant | Docker volume `qdrant-storage` | no | yes |
 
-**Live (deployment):** data must move to hosted stores so public users and
-redeploys don't lose it. Config is already env-driven (`pydantic-settings`), so
-**no code change is needed** — only `.env` values change.
+**Live (deployment):** data moves to hosted stores so public users and redeploys
+don't lose it. Config is already env-driven (`pydantic-settings`), so **no code
+change is needed** — only `.env` values change.
 
 | Store | Hosted option (free tier) |
 |---|---|
 | PostgreSQL | Neon / Supabase / Render Postgres |
 | Neo4j | Neo4j Aura Free |
-| ChromaDB | **needs a persistent disk** (see below) |
+| Qdrant | **Qdrant Cloud Free** (free forever; 4GB — set `QDRANT_URL` + `QDRANT_API_KEY`) |
 | Backend | Render / Railway (set env vars in the dashboard, never in git) |
 | Frontend | Vercel |
 | LLM / embeddings | Gemini API (already cloud) |
 
-**ChromaDB caveat (flag for team):** ChromaDB is embedded (locked decision), so
-on hosts with an ephemeral filesystem (Render/Railway free) embeddings are lost
-on redeploy. Options: attach a persistent disk (small paid/VPS) or deploy on a
-VPS with a Docker volume. This is an architectural decision — raise it before
-deploying; do not silently switch to a separate vector server (Qdrant).
+Qdrant is a separate server both locally (Docker) and live (Cloud), so embeddings
+persist across redeploys with no extra disk — that is why it was chosen over the
+embedded ChromaDB.
 
 ## Build / run commands
 

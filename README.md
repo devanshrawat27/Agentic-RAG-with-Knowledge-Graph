@@ -28,7 +28,7 @@ original contribution and its main hallucination-mitigation mechanism.
 | Frontend | Next.js dashboard |
 | Backend | FastAPI |
 | Orchestration | LangChain / LangGraph |
-| Vector store | Qdrant or ChromaDB |
+| Vector store | Qdrant (free-forever cloud tier; local via Docker) |
 | Knowledge graph | Neo4j (Community Edition, or Aura free tier) |
 | Relational metadata | PostgreSQL |
 | LLM API | Google Gemini (free tier) — Ollama as a free local fallback |
@@ -44,7 +44,7 @@ an API, not local training.
 - Python 3.10+, Node.js 18+
 - LangChain, LangGraph, Hugging Face Transformers (`pip install`)
 - Neo4j Community Edition (local) or Neo4j Aura (free cloud tier)
-- Qdrant or ChromaDB (local or free cloud tier)
+- Qdrant (local via Docker, or Qdrant Cloud free tier)
 - PostgreSQL, Docker
 
 **Accounts (all free tiers, no paid subscriptions required):**
@@ -68,7 +68,7 @@ an API, not local training.
 - Install Neo4j locally; practice Cypher queries against the agreed schema
 - Prepare the dataset (CUAD contracts + self-written samples)
 - Build document upload → text extraction → chunking pipeline
-- Embed chunks and store them in Qdrant/ChromaDB
+- Embed chunks and store them in Qdrant
 - Build an LLM-prompted entity/relationship extractor; populate Neo4j
 - Get a baseline flat-chunk RAG answering simple, single-hop questions
 

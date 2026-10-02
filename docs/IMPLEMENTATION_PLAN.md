@@ -69,14 +69,14 @@ Checkpoint B: schema is locked and documented. Do not proceed until signed off.
 
 ## Phase C — Ingestion pipeline (Phase 1 of the roadmap)
 
-Goal: upload a document → chunks in ChromaDB + entities in Neo4j + row in Postgres.
+Goal: upload a document → chunks in Qdrant + entities in Neo4j + row in Postgres.
 
 - [ ] C1. LLM + embedding factories (`core/llm.py`, `core/embeddings.py`)
        — Gemini primary, Ollama / HF fallback
-- [ ] C2. ChromaDB client (`core/vectorstore.py`), per-user collections
+- [ ] C2. Qdrant client (`core/vectorstore.py`), per-user collections
 - [ ] C3. Loader: PDF/DOCX → raw text (`ingestion/loader.py`)
 - [ ] C4. Chunker: overlapping chunking (`ingestion/chunker.py`)
-- [ ] C5. Embedder: chunks → ChromaDB (`ingestion/embedder.py`)
+- [ ] C5. Embedder: chunks → Qdrant (`ingestion/embedder.py`)
 - [ ] C6. Extractor: LLM → entities/relationships → Neo4j (`ingestion/extractor.py`),
        every node tagged with `user_id`
 - [ ] C7. `POST /api/documents` (upload, user-scoped) + `GET /api/documents` (list)
@@ -94,7 +94,7 @@ Goal: Planner → Retriever → Verifier → Answerer over LangGraph, user-scope
 
 - [ ] D1. Wire LangGraph graph (`pipeline/`) with `AgentState`
 - [ ] D2. Planner: LLM decomposes question → sub-questions
-- [ ] D3. Retriever: hybrid search (ChromaDB vector + Neo4j traversal), merge/rank
+- [ ] D3. Retriever: hybrid search (Qdrant vector + Neo4j traversal), merge/rank
 - [ ] D4. Verifier: per-claim check against evidence; loop back when unsupported
        (max-loop guard) — **core contribution**
 - [ ] D5. Answerer: final answer from verified claims only + citations
@@ -139,7 +139,7 @@ Checkpoint E: ChatGPT-style experience — chat, history, citations, graph trace
 - **Small steps only.** Finish and verify one step before the next.
 - **Branch per change.** Pull latest `main` first; never push to `main` directly.
 - **Test locally before merge.** Backend import + `/health`; frontend `npm run build`.
-- **User isolation everywhere.** Every Postgres query, ChromaDB search, and Neo4j
+- **User isolation everywhere.** Every Postgres query, Qdrant search, and Neo4j
   traversal scoped by the authenticated `user_id`.
 - **No secrets in git.** Placeholders live in `.env.example` only.
 

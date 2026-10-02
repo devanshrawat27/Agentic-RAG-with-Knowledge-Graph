@@ -31,8 +31,9 @@ class Settings(BaseSettings):
     embedding_provider: str = "gemini"  # "gemini" | "huggingface"
     hf_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
 
-    # --- Vector store ---
-    chroma_persist_dir: str = "./chroma"
+    # --- Vector store (Qdrant) ---
+    qdrant_url: str = "http://localhost:6333"
+    qdrant_api_key: str = ""  # needed for Qdrant Cloud; empty for local
 
     # --- Graph DB (Neo4j) ---
     neo4j_uri: str = "bolt://localhost:7687"

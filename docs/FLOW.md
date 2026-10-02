@@ -21,7 +21,7 @@ gets answered, and what the frontend shows at each step.
 │   └──────────┬───────────────────────────────┬───────────┘             │
 │              │                               │                         │
 │       ┌──────▼──────┐                 ┌──────▼──────┐                  │
-│       │  ChromaDB   │                 │   Neo4j     │                  │
+│       │   Qdrant    │                 │   Neo4j     │                  │
 │       │ (vectors)   │                 │  (graph)    │                  │
 │       └─────────────┘                 └─────────────┘                  │
 │                      ┌─────────────┐                                    │
@@ -48,7 +48,7 @@ Upload (PDF/DOCX)
       ▼
 [2] Chunker       split into overlapping chunks  ingestion/chunker.py
       │
-      ├──────────────► [3a] Embedder   embed each chunk  ──► ChromaDB
+      ├──────────────► [3a] Embedder   embed each chunk  ──► Qdrant
       │                ingestion/embedder.py
       │
       └──────────────► [3b] Extractor  LLM extracts entities + relationships
@@ -62,7 +62,7 @@ Upload (PDF/DOCX)
                         PostgreSQL  (document record, status, chunk count)
 ```
 
-**Result:** every document exists as (a) embedded chunks in ChromaDB,
+**Result:** every document exists as (a) embedded chunks in Qdrant,
 (b) entities/relationships in Neo4j, (c) a metadata row in PostgreSQL.
 
 ## Part B — Query flow (Phase 2)
@@ -83,7 +83,7 @@ User question (frontend)
        ▼
 ┌─────────────┐
 │  RETRIEVER  │  HYBRID search:
-└──────┬──────┘   • vector similarity  → ChromaDB (relevant chunks)
+└──────┬──────┘   • vector similarity  → Qdrant (relevant chunks)
        │          • graph traversal    → Neo4j (connected facts / multi-hop)
        │          • merge + rank both into `evidence`
        ▼

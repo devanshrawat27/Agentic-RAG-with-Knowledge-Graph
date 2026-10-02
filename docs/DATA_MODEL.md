@@ -21,10 +21,10 @@ it must not run.
 
 Cascade: deleting a user removes their chats, messages, documents, tokens.
 
-## ChromaDB (embeddings)
+## Qdrant (embeddings)
 
 - One collection per user: `user_{user_id}_chunks` (preferred), **or** a single
-  collection with a `user_id` metadata filter on every query.
+  collection with a `user_id` payload filter on every query.
 - Never run a similarity search without the user scope.
 
 ## Neo4j (knowledge graph)
@@ -38,7 +38,7 @@ Cascade: deleting a user removes their chats, messages, documents, tokens.
 
 1. **Session** — `get_current_user` dependency resolves the caller's `user_id`.
 2. **Postgres** — every repository/query takes `user_id` and filters on it.
-3. **ChromaDB** — collection name / metadata filter derived from `user_id`.
+3. **Qdrant** — collection name / payload filter derived from `user_id`.
 4. **Neo4j** — every Cypher query begins from the user's owned nodes.
 5. **Response** — endpoints return only the authenticated user's data.
 
@@ -50,7 +50,7 @@ Cascade: deleting a user removes their chats, messages, documents, tokens.
 
 ## Notes
 
-- Postgres holds ownership; ChromaDB and Neo4j mirror `user_id` so filters stay
+- Postgres holds ownership; Qdrant and Neo4j mirror `user_id` so filters stay
   consistent. If they ever disagree, Postgres wins.
 - This document is the contract for the auth/isolation feature. It does not
   change the locked architecture (`AGENTS.md`).
