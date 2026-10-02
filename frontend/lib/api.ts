@@ -122,6 +122,8 @@ export interface DocumentItem {
   filename: string;
   status: string;
   chunk_count: number;
+  entity_count: number;
+  relationship_count: number;
   created_at: string | null;
 }
 
@@ -131,10 +133,7 @@ export interface UploadResult {
   filename: string;
   status: string;
   chunks: number;
-  entities: number;
-  relationships: number;
-  extracted_chunks: number;
-  quota_hit: boolean;
+  extraction: string;
 }
 
 export async function uploadDocument(file: File): Promise<UploadResult> {

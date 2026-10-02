@@ -44,14 +44,12 @@ export default function DocumentsPage() {
     setUploading(true);
     try {
       const result: UploadResult = await uploadDocument(files[0]);
-      let msg = `"${result.filename}" ingested — ${result.chunks} chunks.`;
-      if (result.quota_hit) {
-        msg += " LLM quota hit; graph extraction was skipped (embeddings are stored).";
-      } else {
-        msg += ` ${result.entities} entities, ${result.relationships} relationships.`;
-      }
-      setNotice(msg);
+      setNotice(
+        `"${result.filename}" — ${result.chunks} chunks embedded. Graph extraction running in the background.`,
+      );
       await refresh();
+      // extraction runs async; refresh again shortly to pick up entity counts
+      setTimeout(() => refresh(), 4000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -148,6 +146,7 @@ export default function DocumentsPage() {
                     <th className="px-4 py-3 font-medium">Filename</th>
                     <th className="px-4 py-3 font-medium">Status</th>
                     <th className="px-4 py-3 font-medium">Chunks</th>
+                    <th className="px-4 py-3 font-medium">Entities</th>
                     <th className="px-4 py-3 font-medium">Uploaded</th>
                   </tr>
                 </thead>
@@ -169,6 +168,9 @@ export default function DocumentsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-neutral-500">{d.chunk_count}</td>
+                      <td className="px-4 py-3 text-neutral-500">
+                        {d.entity_count} / {d.relationship_count}
+                      </td>
                       <td className="px-4 py-3 text-neutral-400">
                         {d.created_at ? new Date(d.created_at).toLocaleString() : "—"}
                       </td>

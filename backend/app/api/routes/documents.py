@@ -1,16 +1,21 @@
-"""Document upload + listing endpoints (auth-scoped per user)."""
+"""Document upload + listing endpoints (auth-scoped per user).
+
+Upload does the fast work (load/chunk/embed) synchronously and returns, then
+runs LLM graph extraction in the background so the request is not blocked by a
+slow local LLM.
+"""
 
 import logging
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.db.models import Document, User
-from app.db.postgres_client import get_db
-from app.ingestion.loader import SUPPORTED_EXTENSIONS, UnsupportedDocumentError
-from app.ingestion.pipeline import ingest_document
+from app.db.postgres_client import get_db, get_session_factory
+from app.ingestion.loader import SUPPORTED_EXTENSIONS
+from app.ingestion.pipeline import extract_document, prepare_document
 
 logger = logging.getLogger("app.api.documents")
 router = APIRouter(prefix="/documents")
@@ -18,8 +23,29 @@ router = APIRouter(prefix="/documents")
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 
 
+def _run_extraction(user_id: int, document_pk: int, doc_id: str, filename: str, chunks: list[str]):
+    """Background job: extract entities/relationships and update the row."""
+    try:
+        stats = extract_document(user_id, doc_id, filename, chunks)
+    except Exception:  # noqa: BLE001
+        logger.exception("background extraction failed for %s", filename)
+        return
+    session = get_session_factory()()
+    try:
+        doc = session.get(Document, document_pk)
+        if doc is not None:
+            doc.entity_count = stats["entities"]
+            doc.relationship_count = stats["relationships"]
+            # extraction is best-effort; embeddings already make it searchable
+            doc.status = "ready"
+            session.commit()
+    finally:
+        session.close()
+
+
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def upload_document(
+    background: BackgroundTasks,
     file: UploadFile = File(...),
     current: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -41,29 +67,33 @@ async def upload_document(
     db.flush()
 
     try:
-        summary = ingest_document(current.id, filename, data, doc_id=None)
-        # Embedding is authoritative for "ready"; extraction may be partial if
-        # the LLM quota was hit, so surface that instead of failing the upload.
-        doc.status = "ready"
-        doc.chunk_count = summary["chunks"]
-        return {
-            "document_id": doc.id,
-            "doc_id": summary["doc_id"],
-            "filename": filename,
-            "status": doc.status,
-            "chunks": summary["chunks"],
-            "entities": summary["entities"],
-            "relationships": summary["relationships"],
-            "extracted_chunks": summary.get("extracted_chunks", 0),
-            "quota_hit": summary.get("quota_hit", False),
-        }
-    except UnsupportedDocumentError as exc:
-        doc.status = "failed"
-        raise HTTPException(status_code=415, detail=str(exc)) from exc
+        prep = prepare_document(current.id, filename, data)
     except Exception as exc:  # noqa: BLE001
         doc.status = "failed"
+        db.commit()
         logger.exception("ingestion failed for %s", filename)
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {exc}") from exc
+
+    doc.doc_id = prep["doc_id"]
+    doc.chunk_count = prep["stored"]
+    # Embedded => already searchable, so mark ready immediately. Graph
+    # extraction runs in the background and fills the entity/relationship counts.
+    doc.status = "ready"
+    db.commit()
+    db.refresh(doc)
+
+    background.add_task(
+        _run_extraction, current.id, doc.id, prep["doc_id"], filename, prep["chunks"]
+    )
+
+    return {
+        "document_id": doc.id,
+        "doc_id": prep["doc_id"],
+        "filename": filename,
+        "status": doc.status,
+        "chunks": prep["stored"],
+        "extraction": "running",
+    }
 
 
 @router.get("")
@@ -81,6 +111,8 @@ def list_documents(
                 "filename": d.filename,
                 "status": d.status,
                 "chunk_count": d.chunk_count,
+                "entity_count": d.entity_count,
+                "relationship_count": d.relationship_count,
                 "created_at": d.created_at.isoformat() if d.created_at else None,
             }
             for d in rows
