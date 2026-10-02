@@ -3,19 +3,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { forgotPassword } from "@/lib/api";
+import { forgotPasswordSchema, validate, type FieldErrors } from "@/lib/validation";
+import { Banner, Card, Field, buttonClass, pageClass } from "@/components/ui";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const parsed = validate(forgotPasswordSchema, { email });
+    if (!parsed.ok) {
+      setFieldErrors(parsed.errors);
+      return;
+    }
+    setFieldErrors({});
     setLoading(true);
     try {
-      await forgotPassword(email);
+      await forgotPassword(parsed.data.email);
       setSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Request failed");
@@ -24,38 +33,57 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-semibold">Reset password</h1>
-        {sent ? (
-          <p className="text-neutral-600">
-            If that email is registered, a reset link has been sent.
+  if (sent) {
+    return (
+      <main className={pageClass}>
+        <Card title="Check your email" subtitle="Reset link sent.">
+          <p className="text-sm text-neutral-500">
+            If <span className="font-medium text-neutral-900">{email}</span> is
+            registered, a reset link has been sent.
           </p>
-        ) : (
-          <form onSubmit={onSubmit} className="space-y-4">
-            {error && <p className="text-sm text-red-600">{error}</p>}
-            <input
-              type="email"
-              required
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border rounded px-3 py-2"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-black text-white rounded px-3 py-2 disabled:opacity-50"
-            >
-              {loading ? "Sending..." : "Send reset link"}
-            </button>
-          </form>
-        )}
-        <Link href="/login" className="text-sm hover:underline">
-          Back to sign in
-        </Link>
-      </div>
+          <Link
+            href="/login"
+            className="inline-block text-sm text-neutral-500 hover:text-neutral-900"
+          >
+            Back to sign in
+          </Link>
+        </Card>
+      </main>
+    );
+  }
+
+  return (
+    <main className={pageClass}>
+      <form onSubmit={onSubmit} noValidate>
+        <Card
+          title="Reset password"
+          subtitle="Enter your email and we'll send you a reset link."
+        >
+          <Banner>{error}</Banner>
+
+          <Field
+            label="Email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={fieldErrors.email}
+          />
+
+          <button type="submit" disabled={loading} className={buttonClass}>
+            {loading ? "Sending..." : "Send reset link"}
+          </button>
+
+          <p className="text-center text-sm text-neutral-500">
+            <Link href="/login" className="font-medium text-neutral-900 hover:underline">
+              Back to sign in
+            </Link>
+          </p>
+        </Card>
+      </form>
     </main>
   );
 }

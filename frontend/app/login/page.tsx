@@ -4,20 +4,29 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { login } from "@/lib/api";
+import { loginSchema, validate, type FieldErrors } from "@/lib/validation";
+import { Banner, Card, Field, buttonClass, pageClass } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const parsed = validate(loginSchema, { email, password });
+    if (!parsed.ok) {
+      setFieldErrors(parsed.errors);
+      return;
+    }
+    setFieldErrors({});
     setLoading(true);
     try {
-      await login(email, password);
+      await login(parsed.data.email, parsed.data.password);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
@@ -27,41 +36,55 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <form onSubmit={onSubmit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-semibold">Sign in</h1>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <input
-          type="email"
-          required
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <input
-          type="password"
-          required
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-black text-white rounded px-3 py-2 disabled:opacity-50"
-        >
-          {loading ? "Signing in..." : "Sign in"}
-        </button>
-        <div className="flex justify-between text-sm text-neutral-600">
-          <Link href="/forgot-password" className="hover:underline">
-            Forgot password?
-          </Link>
-          <Link href="/signup" className="hover:underline">
-            Create account
-          </Link>
-        </div>
+    <main className={pageClass}>
+      <form onSubmit={onSubmit} noValidate className="w-full max-w-md [&>div]:max-w-full">
+        <Card title="Sign in" subtitle="Welcome back.">
+          <Banner>{error}</Banner>
+
+          <div className="space-y-4">
+            <Field
+              label="Email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={fieldErrors.email}
+            />
+            <Field
+              label="Password"
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              placeholder="Your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={fieldErrors.password}
+              hint={
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-neutral-500 hover:text-neutral-900"
+                >
+                  Forgot password?
+                </Link>
+              }
+            />
+          </div>
+
+          <button type="submit" disabled={loading} className={buttonClass}>
+            {loading ? "Signing in..." : "Sign in"}
+          </button>
+
+          <p className="text-center text-sm text-neutral-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-medium text-neutral-900 hover:underline">
+              Create account
+            </Link>
+          </p>
+        </Card>
       </form>
     </main>
   );
