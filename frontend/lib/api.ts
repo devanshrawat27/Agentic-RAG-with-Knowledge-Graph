@@ -116,3 +116,75 @@ export function resetPassword(
     body: JSON.stringify({ token, new_password: newPassword }),
   });
 }
+
+export interface DocumentItem {
+  id: number;
+  filename: string;
+  status: string;
+  chunk_count: number;
+  created_at: string | null;
+}
+
+export interface UploadResult {
+  document_id: number;
+  doc_id: string;
+  filename: string;
+  status: string;
+  chunks: number;
+  entities: number;
+  relationships: number;
+  extracted_chunks: number;
+  quota_hit: boolean;
+}
+
+export async function uploadDocument(file: File): Promise<UploadResult> {
+  const form = new FormData();
+  form.append("file", file);
+  const res = await fetch(`${API_BASE_URL}/api/documents`, {
+    method: "POST",
+    credentials: "include",
+    body: form,
+  });
+  if (!res.ok) {
+    let detail = `Upload failed: ${res.status}`;
+    try {
+      const body = await res.json();
+      const parsed = readDetail(body?.detail);
+      if (parsed) detail = parsed;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail);
+  }
+  return res.json() as Promise<UploadResult>;
+}
+
+export function listDocuments(): Promise<{ documents: DocumentItem[] }> {
+  return request("/api/documents");
+}
+
+export interface Citation {
+  index: number;
+  doc_id: string | null;
+  chunk_id: string | null;
+  filename: string | null;
+  snippet: string;
+  score: number | null;
+}
+
+export interface ChatResponse {
+  answer: string;
+  citations: Citation[];
+  mode: string;
+}
+
+export function askQuestion(
+  question: string,
+  topK = 5,
+  mode = "baseline",
+): Promise<ChatResponse> {
+  return request("/api/chat", {
+    method: "POST",
+    body: JSON.stringify({ question, top_k: topK, mode }),
+  });
+}

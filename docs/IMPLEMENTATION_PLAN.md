@@ -70,7 +70,7 @@ appears later, raise it before changing — re-extraction is the cost.
 
 ---
 
-## Phase C — Ingestion pipeline (Phase 1 of the roadmap)
+## Phase C — Ingestion pipeline (Phase 1 of the roadmap) — DONE
 
 Goal: upload a document → chunks in Qdrant + entities in Neo4j + row in Postgres.
 
@@ -84,12 +84,17 @@ Goal: upload a document → chunks in Qdrant + entities in Neo4j + row in Postgr
 - [x] C6. Extractor: LLM → entities/relationships → Neo4j (`ingestion/extractor.py`),
        locked schema, `user_id` + `doc_id`/`chunk_id` provenance; fails fast on quota
 - [x] C7. `POST /api/documents` (upload, user-scoped) + `GET /api/documents` (list)
-- [ ] C8. Document upload UI (`/documents`) with status polling
-- [ ] C9. Baseline flat-rag answer (single-hop) for the 3-stage comparison
+- [x] C8. Document upload UI (`/documents`) + simple chat UI (`/chat`)
+- [x] C9. Baseline flat-RAG (`rag/retrieval.py`, `rag/baseline.py`) +
+       `POST /api/chat` — stage 1 of the 3-stage comparison
 
-Checkpoint C: upload a contract → chunks in Qdrant + metadata (done, verified);
-graph extraction works but is limited by the free-tier LLM quota — use Ollama
-or a paid key to extract a full contract. Baseline RAG (C9) still pending.
+Checkpoint C: **done.** Upload a contract → chunks in Qdrant + metadata;
+baseline RAG answers with citations (verified). Graph extraction works too, but
+is limited by the free-tier LLM quota — use Ollama (local) or a paid key to
+extract a full contract.
+
+Note: local Ollama on CPU is slow (~1 min per answer/chunk); use Gemini for
+fast demos.
 
 ---
 

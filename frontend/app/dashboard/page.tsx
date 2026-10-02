@@ -84,7 +84,12 @@ export default function DashboardPage() {
                 <p className="mt-2 text-sm leading-6 text-neutral-500">
                   Upload files to build your knowledge base.
                 </p>
-                <p className="mt-4 text-xs text-neutral-400">Coming soon</p>
+                <a
+                  href="/documents"
+                  className="mt-4 inline-block rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800"
+                >
+                  Manage documents
+                </a>
               </section>
 
               <section className="border-t border-neutral-200 pt-6">
@@ -94,7 +99,12 @@ export default function DashboardPage() {
                 <p className="mt-2 text-sm leading-6 text-neutral-500">
                   Ask questions across your documents.
                 </p>
-                <p className="mt-4 text-xs text-neutral-400">Coming soon</p>
+                <a
+                  href="/chat"
+                  className="mt-4 inline-block rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-neutral-800"
+                >
+                  Ask a question
+                </a>
               </section>
             </div>
           </>

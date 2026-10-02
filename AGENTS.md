@@ -256,9 +256,12 @@ place (security utils, DB models, `/api/auth` router, plain test UI), but has
 **Graph schema is LOCKED v1** (`docs/GRAPH_SCHEMA.md`) — ingestion is no longer
 blocked on it.
 
-**Ingestion and agents have not started.** They can begin per
-`docs/IMPLEMENTATION_PLAN.md` (Phase C then D). The schema is frozen; if
-something needs changing, raise it before re-running extraction.
+**Ingestion (Phase C) is complete** — load/chunk/embed (Qdrant) + LLM extraction
+(Neo4j), `/api/documents` + `/api/chat` (baseline RAG), and `/documents` +
+`/chat` UIs. Verified with CUAD samples.
+
+**Agents (Phase D) have not started.** Next: Planner → Retriever (hybrid) →
+Verifier → Answerer per `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open items (resolve when reached; no need to block)
 
