@@ -1,4 +1,2 @@
-"""Ingestion pipeline (Phase 2): extract, chunk, embed, extract entities.
+"""Ingestion pipeline: load -> chunk -> embed (Qdrant) -> extract (Neo4j)."""
 
-Scaffolding only. Implementation comes after the graph schema is finalized.
-"""

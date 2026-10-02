@@ -25,13 +25,19 @@ class Settings(BaseSettings):
     )
 
     # --- LLM ---
+    # gemini-2.0-flash is retired; gemini-flash-latest tracks the current flash.
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-flash-latest"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.1:8b"
+    llm_provider: str = "gemini"  # "gemini" | "ollama"
+    # Keep small so a 429 fails fast instead of retrying for minutes.
+    llm_max_retries: int = 1
 
     # --- Embeddings ---
     embedding_provider: str = "gemini"  # "gemini" | "huggingface"
+    gemini_embedding_model: str = "gemini-embedding-001"
+    gemini_embedding_dim: int = 3072
     hf_embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # --- Vector store (Qdrant) ---

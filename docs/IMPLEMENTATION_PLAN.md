@@ -74,20 +74,22 @@ appears later, raise it before changing — re-extraction is the cost.
 
 Goal: upload a document → chunks in Qdrant + entities in Neo4j + row in Postgres.
 
-- [ ] C1. LLM + embedding factories (`core/llm.py`, `core/embeddings.py`)
-       — Gemini primary, Ollama / HF fallback
-- [ ] C2. Qdrant client (`core/vectorstore.py`), per-user collections
-- [ ] C3. Loader: PDF/DOCX → raw text (`ingestion/loader.py`)
-- [ ] C4. Chunker: overlapping chunking (`ingestion/chunker.py`)
-- [ ] C5. Embedder: chunks → Qdrant (`ingestion/embedder.py`)
-- [ ] C6. Extractor: LLM → entities/relationships → Neo4j (`ingestion/extractor.py`),
-       every node tagged with `user_id`
-- [ ] C7. `POST /api/documents` (upload, user-scoped) + `GET /api/documents` (list)
+- [x] C1. LLM + embedding factories (`core/llm.py`, `core/embeddings.py`)
+       — Gemini primary (`gemini-flash-latest`), Ollama / HF fallback.
+       Note: Gemini free tier is only ~20 requests/day on the flash model.
+- [x] C2. Qdrant client (`core/vectorstore.py`), per-user collections
+- [x] C3. Loader: PDF/DOCX/TXT → raw text (`ingestion/loader.py`)
+- [x] C4. Chunker: overlapping chunking (`ingestion/chunker.py`)
+- [x] C5. Embedder: chunks → Qdrant (`ingestion/embedder.py`) — verified with CUAD samples
+- [x] C6. Extractor: LLM → entities/relationships → Neo4j (`ingestion/extractor.py`),
+       locked schema, `user_id` + `doc_id`/`chunk_id` provenance; fails fast on quota
+- [x] C7. `POST /api/documents` (upload, user-scoped) + `GET /api/documents` (list)
 - [ ] C8. Document upload UI (`/documents`) with status polling
 - [ ] C9. Baseline flat-rag answer (single-hop) for the 3-stage comparison
 
-Checkpoint C: upload a contract, see chunks + graph + metadata; baseline
-question answered correctly.
+Checkpoint C: upload a contract → chunks in Qdrant + metadata (done, verified);
+graph extraction works but is limited by the free-tier LLM quota — use Ollama
+or a paid key to extract a full contract. Baseline RAG (C9) still pending.
 
 ---
 
