@@ -4,12 +4,6 @@ import { motion } from "framer-motion";
 import { HeroVisualization } from "./HeroVisualization";
 import { Badge, Container, GhostButton, PrimaryButton } from "./primitives";
 
-const HIGHLIGHTS = [
-  { label: "Verified Answers", sub: "Source-grounded, never hallucinated" },
-  { label: "Multi-Document Reasoning", sub: "Connect facts across files" },
-  { label: "Works with All Document Types", sub: "PDF, DOCX, PPT, CSV & more" },
-];
-
 export function Hero() {
   return (
     <section className="relative overflow-hidden pt-[115px] pb-16 sm:pt-[130px] md:pb-24">
@@ -81,28 +75,6 @@ export function Hero() {
                 </svg>
                 Watch Demo
               </GhostButton>
-            </motion.div>
-
-            {/* Honest, unmeasured highlights (no unverified numbers) */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 grid w-full max-w-xl grid-cols-1 gap-5 pt-2 sm:grid-cols-3"
-            >
-              {HIGHLIGHTS.map((h) => (
-                <div key={h.label} className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white/70" aria-hidden="true" />
-                    <span className="text-[13.5px] font-medium text-white">
-                      {h.label}
-                    </span>
-                  </div>
-                  <span className="text-[12px] leading-snug text-white/50">
-                    {h.sub}
-                  </span>
-                </div>
-              ))}
             </motion.div>
           </div>
 
