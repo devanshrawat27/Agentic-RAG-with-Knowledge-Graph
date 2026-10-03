@@ -3,17 +3,48 @@
 import { motion } from "framer-motion";
 import { Container, SectionHeading } from "./primitives";
 
+/* -------------------------------------------------------------------------- */
+/*  Steps (the 4 agents of our pipeline)                                      */
+/* -------------------------------------------------------------------------- */
+
 const STEPS = [
   {
     n: "01",
-    title: "Upload",
-    body: "Add your documents (PDF, DOCX, PPT, etc.).",
+    title: "Planner",
+    desc: "Deconstructs query",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+      <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
         <path
-          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"
+          d="M3 7h6M3 12h6m-6 5h12M14 7h7M14 12h7m-7 5h4"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+    active: true,
+  },
+  {
+    n: "02",
+    title: "Retriever",
+    desc: "Vector + Graph search",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+        <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="1.6" />
+        <path d="m20 20-3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    n: "03",
+    title: "Verifier",
+    desc: "Cross-checks evidence",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+        <path
+          d="m5 12 5 5L20 6"
+          stroke="currentColor"
+          strokeWidth="1.6"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -21,47 +52,209 @@ const STEPS = [
     ),
   },
   {
-    n: "02",
-    title: "Build Knowledge Graph",
-    body: "We extract entities, relationships and context automatically.",
+    n: "04",
+    title: "Answerer",
+    desc: "Synthesizes citations",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
-        <circle cx="6" cy="6" r="2" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="18" cy="6" r="2" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="6" cy="18" r="2" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="18" cy="18" r="2" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M8 6h8M8 18h8M6 8v8M18 8v8" stroke="currentColor" strokeWidth="1.5" />
-        <circle cx="12" cy="12" r="1.2" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    n: "03",
-    title: "Ask & Explore",
-    body: "Get accurate, source-backed answers and discover insights.",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
+      <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
         <path
-          d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"
+          d="M4 5h16v11H7l-3 3V5Z"
           stroke="currentColor"
-          strokeWidth="1.5"
+          strokeWidth="1.6"
           strokeLinejoin="round"
         />
+        <path d="M8 9h8M8 12h6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
       </svg>
     ),
   },
 ];
 
-function Arrow() {
+function StepCard({ step }: { step: (typeof STEPS)[number] }) {
   return (
-    <div className="hidden h-12 items-center md:flex">
-      <svg width="100" height="20" viewBox="0 0 100 20" fill="none" aria-hidden="true">
-        <line x1="0" y1="10" x2="92" y2="10" stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="2 3" />
-        <path d="m86 5 10 5-10 5" stroke="rgba(255,255,255,0.35)" strokeWidth="1" fill="none" />
-      </svg>
+    <div
+      className={`relative rounded-xl border bg-white/[0.02] p-5 transition-colors ${
+        step.active
+          ? "border-white/[0.08]"
+          : "border-white/[0.06] hover:border-white/[0.1]"
+      }`}
+    >
+      {/* Top accent line */}
+      {step.active ? (
+        <motion.div
+          layoutId="step-accent"
+          className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-cyan-400/0 via-cyan-400 to-cyan-400/0"
+        />
+      ) : (
+        <div className="absolute inset-x-0 -top-px h-px bg-white/[0.06]" />
+      )}
+
+      <div className="flex items-start justify-between">
+        <span className="text-[11px] font-medium tracking-wider text-white/45">
+          {step.n}
+        </span>
+        <span
+          className={`flex h-1.5 w-1.5 rounded-full ${
+            step.active ? "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.7)]" : "bg-white/30"
+          }`}
+        />
+      </div>
+
+      <div className="mt-6 flex items-center gap-2">
+        <span
+          className={`flex h-7 w-7 items-center justify-center rounded-lg border ${
+            step.active
+              ? "border-cyan-400/40 bg-cyan-400/10 text-cyan-300"
+              : "border-white/[0.07] bg-white/[0.03] text-white/65"
+          }`}
+        >
+          {step.icon}
+        </span>
+        <h3 className="text-[15px] font-semibold tracking-tight text-white">
+          {step.title}
+        </h3>
+      </div>
+
+      <p className="mt-2 text-[12.5px] leading-relaxed text-white/50">
+        {step.desc}
+      </p>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Planner Agent Demo Panel                                                  */
+/* -------------------------------------------------------------------------- */
+
+const SUB_QUESTIONS = [
+  {
+    n: "Q1",
+    target: "CONTRACTS / ATTICUS CUAD",
+    kind: "Vector Chunk Search",
+    text: "Extract termination notification period & penalty triggers for Vendor X.",
+  },
+  {
+    n: "Q2",
+    target: "CORPORATE POLICY / SEC 14",
+    kind: "Vector Chunk Search",
+    text: "Retrieve aggregate liability cap amount and exceptions under 2024 guidelines.",
+  },
+  {
+    n: "Q3",
+    target: "NEO4J KNOWLEDGE GRAPH",
+    kind: "Graph Entity Traversal",
+    text: "Traverse relationship path: (Vendor_X)-[GOVERNED_BY]->(Liability_Limit).",
+  },
+];
+
+function PlannerPanel() {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[#08090d]">
+      {/* Top edge subtle line */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/12 to-transparent" />
+
+      <div className="grid gap-px md:grid-cols-2">
+        {/* Left: Incoming Question */}
+        <div className="relative p-6 md:p-7">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-cyan-400/40 bg-cyan-400/10 text-cyan-300">
+                <svg viewBox="0 0 24 24" fill="none" className="h-3.5 w-3.5">
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <div>
+                <div className="text-[13px] font-semibold text-white">
+                  01 · Planner Agent
+                </div>
+                <div className="text-[11.5px] text-white/45">
+                  Multi-hop query deconstruction & planning
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-white/40">
+              Incoming complex question
+            </div>
+
+            <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.02] p-4">
+              <div className="flex flex-wrap items-center gap-2 text-[10.5px] uppercase tracking-wider text-white/45">
+                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">
+                  User Query
+                </span>
+                <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5">
+                  Master Agreement 2024
+                </span>
+              </div>
+              <p className="mt-3 text-[14px] leading-relaxed text-white/85">
+                <span className="text-white/55">“</span>
+                Does Vendor X&apos;s termination cause in the 2024 Agreement comply
+                with our updated liability limits in Section 14?
+                <span className="text-white/55">”</span>
+              </p>
+              <div className="mt-3 flex items-center gap-2 border-t border-white/[0.05] pt-3 text-[12px] text-cyan-300/90">
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.7)]" />
+                <span>
+                  Requires <span className="font-mono">2 document traversals</span> +
+                  <span className="font-mono"> 1 compliance cross-check</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: Decomposed Sub-questions */}
+        <div className="relative border-t border-white/[0.05] bg-white/[0.012] p-6 md:border-l md:border-t-0 md:p-7">
+          <div className="flex items-center justify-between">
+            <div className="text-[10.5px] font-medium uppercase tracking-[0.14em] text-white/45">
+              Decomposed sub-questions
+            </div>
+            <div className="flex items-center gap-1.5 text-[10.5px] font-medium uppercase tracking-wider text-white/55">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+              <span>(Executed in parallel)</span>
+            </div>
+          </div>
+
+          <div className="mt-4 space-y-2.5">
+            {SUB_QUESTIONS.map((q) => (
+              <div
+                key={q.n}
+                className="rounded-lg border border-white/[0.07] bg-white/[0.02] p-3 transition-colors hover:border-white/[0.12] hover:bg-white/[0.035]"
+              >
+                <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider">
+                  <div className="flex items-center gap-2">
+                    <span className="flex h-4 w-4 items-center justify-center rounded-md border border-cyan-400/40 bg-cyan-400/10 text-[10px] font-semibold text-cyan-300">
+                      {q.n.replace("Q", "")}
+                    </span>
+                    <span className="text-white/55">Target:</span>
+                    <span className="font-mono text-white/75">{q.target}</span>
+                  </div>
+                  <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium text-white/55">
+                    {q.kind}
+                  </span>
+                </div>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-white/75">
+                  {q.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Section                                                                   */
+/* -------------------------------------------------------------------------- */
 
 export function HowItWorks() {
   return (
@@ -77,49 +270,19 @@ export function HowItWorks() {
               </span>
             </>
           }
-          description="Turn your documents into a connected knowledge graph in three simple steps."
+          description="Four agents collaborate to turn complex questions into verified, sourced answers."
         />
 
-        <div className="mt-14 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr] md:gap-0">
-          {STEPS.map((s, i) => (
-            <div key={s.n} className="contents">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.07] bg-white/[0.03] text-white/80">
-                  {s.icon}
-                </div>
-                <div className="mt-5 text-[12px] font-medium tracking-wider text-white/40">
-                  {s.n}
-                </div>
-                <h3 className="mt-1 text-[18px] font-semibold text-white">
-                  {s.title}
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/55">
-                  {s.body}
-                </p>
-              </motion.div>
-              {i < STEPS.length - 1 && (
-                <div className="hidden md:flex items-center justify-center px-3">
-                  <Arrow />
-                </div>
-              )}
-            </div>
+        {/* 4 step cards */}
+        <div className="mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((s) => (
+            <StepCard key={s.n} step={s} />
           ))}
         </div>
 
-        {/* Mobile vertical arrows */}
-        <div className="mt-4 flex flex-col items-center gap-2 md:hidden">
-          {[1, 2].map((i) => (
-            <svg key={i} width="20" height="32" viewBox="0 0 20 32" fill="none" aria-hidden="true">
-              <line x1="10" y1="0" x2="10" y2="26" stroke="rgba(255,255,255,0.12)" strokeWidth="1" strokeDasharray="2 3" />
-              <path d="m5 22 5 8 5-8" stroke="rgba(255,255,255,0.35)" strokeWidth="1" fill="none" />
-            </svg>
-          ))}
+        {/* Planner demo panel */}
+        <div className="mt-8">
+          <PlannerPanel />
         </div>
       </Container>
     </section>
