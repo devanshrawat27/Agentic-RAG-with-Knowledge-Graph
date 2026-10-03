@@ -32,10 +32,17 @@ Thumbs.db
 
 # Docker / data
 *.log
+*.err
 data/
 neo4j-data/
 pgdata/
 qdrant-storage/
+
+# Local dev helper scripts (hardcoded paths)
+run-backend.bat
+run-dev.bat
+.dev-stdout.log
+.dev-stderr.log
 
 # Test / coverage
 .pytest_cache/

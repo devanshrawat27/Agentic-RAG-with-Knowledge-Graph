@@ -42,8 +42,11 @@ export function ProductShowcase() {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
-          className="mt-14 md:mt-20"
+          className="relative mt-14 md:mt-20"
         >
+          {/* Subtle curved ambient halo behind the preview chassis */}
+          <div className="pointer-events-none absolute -inset-x-8 -top-16 -bottom-10 rounded-[40px] bg-gradient-to-b from-white/[0.04] via-blue-500/[0.015] to-transparent blur-3xl -z-10" />
+
           <DashboardPreview />
         </motion.div>
       </Container>

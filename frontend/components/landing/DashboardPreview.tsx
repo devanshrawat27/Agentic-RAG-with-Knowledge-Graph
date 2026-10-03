@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 const NAV_ITEMS = [
@@ -163,12 +164,14 @@ export function DashboardPreview() {
             {/* Brand Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <svg viewBox="0 0 64 64" className="h-5 w-5 drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]" aria-hidden="true">
-                  <path d="M32 4 L58 19 L50 53 L14 53 L6 19 Z" fill="#0A0A0A" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
-                  <path d="M32 4 L58 19 L32 30 Z" fill="#FFFFFF" />
-                  <path d="M32 4 L6 19 L32 30 Z" fill="#A1A1AA" />
-                </svg>
-                <span className="text-[13.5px] font-semibold tracking-tight text-white">TrueDocs</span>
+                <Image
+                  src="/Futuristic Folded Ribbon Emblem.png"
+                  alt="TrueDocs"
+                  width={26}
+                  height={26}
+                  className="h-[26px] w-[26px] object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.15)]"
+                />
+                <span className="text-[15.5px] font-semibold tracking-tight text-white">TrueDocs</span>
               </div>
               <button aria-label="Collapse sidebar" className="text-white/30 hover:text-white/70 transition-colors">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
@@ -329,11 +332,20 @@ export function DashboardPreview() {
                 </button>
               </div>
 
-              {/* Graph Visualizer Display - Faithful to the Reference Mockup */}
-              <div className="relative h-[230px] md:h-[245px] overflow-hidden rounded-2xl border border-white/[0.09] bg-[#040406]">
+              {/* Graph Visualizer Display — premium dynamic */}
+              <div className="group/graph relative h-[230px] md:h-[245px] overflow-hidden rounded-2xl border border-white/[0.09] bg-[#040406]">
+                {/* Ambient center bloom */}
+                <motion.div
+                  animate={{ opacity: [0.5, 0.85, 0.5], scale: [1, 1.08, 1] }}
+                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-500/[0.08] blur-3xl"
+                />
+
                 {/* Clean Dot Matrix Grid Canvas */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-40"
+                <motion.div
+                  animate={{ opacity: [0.35, 0.5, 0.35] }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-0"
                   style={{
                     backgroundImage: "radial-gradient(circle, rgba(255, 255, 255, 0.15) 1px, transparent 1px)",
                     backgroundSize: "18px 18px",
@@ -345,116 +357,145 @@ export function DashboardPreview() {
                 {/* SVG Curves & Flow Connections */}
                 <svg className="absolute inset-0 h-full w-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
                   <defs>
-                    {/* Gradients for each organic branch */}
                     <linearGradient id="curve-alpha-docs" x1="50%" y1="50%" x2="22%" y2="28%">
-                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.35)" />
-                      <stop offset="100%" stopColor="rgba(59, 130, 246, 0.18)" />
+                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
+                      <stop offset="100%" stopColor="rgba(59, 130, 246, 0.35)" />
                     </linearGradient>
                     <linearGradient id="curve-alpha-tech" x1="50%" y1="50%" x2="22%" y2="74%">
-                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.35)" />
-                      <stop offset="100%" stopColor="rgba(168, 85, 247, 0.18)" />
+                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
+                      <stop offset="100%" stopColor="rgba(168, 85, 247, 0.35)" />
                     </linearGradient>
                     <linearGradient id="curve-alpha-team" x1="50%" y1="50%" x2="78%" y2="28%">
-                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.35)" />
-                      <stop offset="100%" stopColor="rgba(16, 185, 129, 0.18)" />
+                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
+                      <stop offset="100%" stopColor="rgba(16, 185, 129, 0.35)" />
                     </linearGradient>
                     <linearGradient id="curve-alpha-insights" x1="50%" y1="50%" x2="78%" y2="74%">
-                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.35)" />
-                      <stop offset="100%" stopColor="rgba(245, 158, 11, 0.18)" />
+                      <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
+                      <stop offset="100%" stopColor="rgba(245, 158, 11, 0.35)" />
                     </linearGradient>
+                    <filter id="bead-glow" x="-300%" y="-300%" width="700%" height="700%">
+                      <feGaussianBlur stdDeviation="0.7" result="b" />
+                      <feMerge>
+                        <feMergeNode in="b" />
+                        <feMergeNode in="SourceGraphic" />
+                      </feMerge>
+                    </filter>
                   </defs>
 
                   {/* Outer subtle orbital / satellite curves */}
                   <path d="M 14 28 C 8 40, 7 60, 9 74" stroke="rgba(255,255,255,0.08)" strokeDasharray="0.6 0.6" strokeWidth="0.25" fill="none" />
                   <path d="M 86 28 C 92 40, 93 60, 91 74" stroke="rgba(255,255,255,0.08)" strokeDasharray="0.6 0.6" strokeWidth="0.25" fill="none" />
 
-                  {/* Main Organic S-Curves connecting nodes with graceful curvature */}
-                  {/* Left-top: to Documents */}
-                  <path d="M 39 48 C 31 48, 30 28, 22 28" stroke="url(#curve-alpha-docs)" strokeWidth="0.35" fill="none" />
-                  {/* Left-bottom: to Technologies */}
-                  <path d="M 39 52 C 31 52, 30 74, 22 74" stroke="url(#curve-alpha-tech)" strokeWidth="0.35" fill="none" />
-                  {/* Right-top: to Team */}
-                  <path d="M 61 48 C 69 48, 70 28, 78 28" stroke="url(#curve-alpha-team)" strokeWidth="0.35" fill="none" />
-                  {/* Right-bottom: to Key Insights */}
-                  <path d="M 61 52 C 69 52, 70 74, 78 74" stroke="url(#curve-alpha-insights)" strokeWidth="0.35" fill="none" />
+                  {/* Main Organic S-Curves (referenced by flowing beads) */}
+                  <path id="path-docs" d="M 39 48 C 31 48, 30 28, 22 28" stroke="url(#curve-alpha-docs)" strokeWidth="0.45" fill="none" />
+                  <path id="path-tech" d="M 39 52 C 31 52, 30 74, 22 74" stroke="url(#curve-alpha-tech)" strokeWidth="0.45" fill="none" />
+                  <path id="path-team" d="M 61 48 C 69 48, 70 28, 78 28" stroke="url(#curve-alpha-team)" strokeWidth="0.45" fill="none" />
+                  <path id="path-insights" d="M 61 52 C 69 52, 70 74, 78 74" stroke="url(#curve-alpha-insights)" strokeWidth="0.45" fill="none" />
 
                   {/* Secondary subtle cross arcs */}
                   <path d="M 22 28 C 14 42, 14 60, 22 74" stroke="rgba(255,255,255,0.07)" strokeDasharray="0.6 0.6" strokeWidth="0.2" fill="none" />
                   <path d="M 78 28 C 86 42, 86 60, 78 74" stroke="rgba(255,255,255,0.07)" strokeDasharray="0.6 0.6" strokeWidth="0.2" fill="none" />
 
-                  {/* Luminous Glowing Junction Beads (refined) */}
-                  <circle cx="31" cy="38" r="0.6" fill="rgba(255,255,255,0.7)" />
-                  <circle cx="31" cy="63" r="0.6" fill="rgba(255,255,255,0.7)" />
-                  <circle cx="69" cy="38" r="0.6" fill="rgba(255,255,255,0.7)" />
-                  <circle cx="69" cy="63" r="0.6" fill="rgba(255,255,255,0.7)" />
+                  {/* Flowing energy beads along each branch */}
+                  {[
+                    { path: "path-docs", color: "#60a5fa", dur: "3.4s", begin: "0s" },
+                    { path: "path-tech", color: "#c084fc", dur: "3.4s", begin: "0.9s" },
+                    { path: "path-team", color: "#34d399", dur: "3.4s", begin: "0.5s" },
+                    { path: "path-insights", color: "#fbbf24", dur: "3.4s", begin: "1.4s" },
+                  ].map((b) => (
+                    <circle key={b.path} r="0.9" fill={b.color} filter="url(#bead-glow)">
+                      <animateMotion dur={b.dur} begin={b.begin} repeatCount="indefinite" rotate="auto">
+                        <mpath href={`#${b.path}`} />
+                      </animateMotion>
+                    </circle>
+                  ))}
 
-                  {/* Outer Satellite Dots */}
-                  <circle cx="8" cy="74" r="0.65" fill="#A855F7" opacity="0.7" />
+                  {/* Junction beads with pulse */}
+                  <circle cx="31" cy="38" r="0.6" fill="rgba(255,255,255,0.75)">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.4s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="31" cy="63" r="0.6" fill="rgba(255,255,255,0.75)">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="2.4s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="69" cy="38" r="0.6" fill="rgba(255,255,255,0.75)">
+                    <animate attributeName="opacity" values="0.3;1;0.3" dur="2.6s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="69" cy="63" r="0.6" fill="rgba(255,255,255,0.75)">
+                    <animate attributeName="opacity" values="1;0.3;1" dur="2.6s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Orbiting satellite dots */}
+                  <circle cx="8" cy="74" r="0.7" fill="#A855F7">
+                    <animate attributeName="r" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="92" cy="50" r="0.7" fill="#06B6D4">
+                    <animate attributeName="r" values="0.5;0.9;0.5" dur="3.4s" repeatCount="indefinite" />
+                  </circle>
                   <circle cx="11" cy="50" r="0.5" fill="#FFFFFF" opacity="0.4" />
-                  <circle cx="92" cy="50" r="0.65" fill="#06B6D4" opacity="0.7" />
                   <circle cx="91" cy="74" r="0.5" fill="#F59E0B" opacity="0.5" />
                 </svg>
 
-                {/* Central Primary Node: Project Alpha — refined glass with subtle bloom */}
+                {/* Central Primary Node: Project Alpha — breathing glass core with orbiting halo */}
                 <div
-                  className="absolute z-10 transition-transform duration-300 hover:scale-[1.04] cursor-pointer"
+                  className="absolute z-10 cursor-pointer"
                   style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}
                 >
-                  <div className="pointer-events-none absolute -inset-2 rounded-full bg-cyan-400/10 blur-xl" />
-
-                  <div className="relative flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_12px_rgba(0,0,0,0.5)]">
-                    <span className="flex h-1.5 w-1.5 rounded-full bg-cyan-300/80 shadow-[0_0_8px_rgba(34,211,238,0.6)]" />
+                  {/* Pulsing halo rings */}
+                  {[0, 1].map((i) => (
+                    <motion.span
+                      key={i}
+                      className="pointer-events-none absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-400/30"
+                      animate={{ scale: [1, 2.1], opacity: [0.5, 0] }}
+                      transition={{ duration: 3, repeat: Infinity, delay: i * 1.5, ease: "easeOut" }}
+                    />
+                  ))}
+                  <motion.div
+                    animate={{ scale: [1, 1.04, 1] }}
+                    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 backdrop-blur-xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_2px_12px_rgba(0,0,0,0.5)]"
+                  >
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" />
+                      <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.7)]" />
+                    </span>
                     <svg className="h-4 w-4 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                       <polyline points="14 2 14 8 20 8" />
                     </svg>
                     <span className="text-[12.5px] font-semibold text-white tracking-tight">Project Alpha</span>
-                  </div>
+                  </motion.div>
                 </div>
 
-                {/* Node 1: Documents (Top Left) — neutral glass + color dot */}
-                <div
-                  className="absolute transition-transform duration-300 hover:scale-[1.04] cursor-pointer"
-                  style={{ left: "22%", top: "28%", transform: "translate(-50%, -50%)" }}
-                >
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400/80" />
-                    <span className="text-[11px] font-medium text-white/85">Documents</span>
-                  </div>
-                </div>
-
-                {/* Node 2: Technologies (Bottom Left) */}
-                <div
-                  className="absolute transition-transform duration-300 hover:scale-[1.04] cursor-pointer"
-                  style={{ left: "22%", top: "74%", transform: "translate(-50%, -50%)" }}
-                >
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400/80" />
-                    <span className="text-[11px] font-medium text-white/85">Technologies</span>
-                  </div>
-                </div>
-
-                {/* Node 3: Team (Top Right) */}
-                <div
-                  className="absolute transition-transform duration-300 hover:scale-[1.04] cursor-pointer"
-                  style={{ left: "78%", top: "28%", transform: "translate(-50%, -50%)" }}
-                >
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80" />
-                    <span className="text-[11px] font-medium text-white/85">Team</span>
-                  </div>
-                </div>
-
-                {/* Node 4: Key Insights (Bottom Right) */}
-                <div
-                  className="absolute transition-transform duration-300 hover:scale-[1.04] cursor-pointer"
-                  style={{ left: "78%", top: "74%", transform: "translate(-50%, -50%)" }}
-                >
-                  <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400/80" />
-                    <span className="text-[11px] font-medium text-white/85">Key Insights</span>
-                  </div>
-                </div>
+                {/* Satellite nodes with per-node glow pulse + hover lift */}
+                {[
+                  { label: "Documents", left: "22%", top: "28%", color: "#60a5fa", ring: "rgba(96,165,250,0.5)" },
+                  { label: "Technologies", left: "22%", top: "74%", color: "#c084fc", ring: "rgba(192,132,252,0.5)" },
+                  { label: "Team", left: "78%", top: "28%", color: "#34d399", ring: "rgba(52,211,153,0.5)" },
+                  { label: "Key Insights", left: "78%", top: "74%", color: "#fbbf24", ring: "rgba(251,191,36,0.5)" },
+                ].map((n, i) => (
+                  <motion.div
+                    key={n.label}
+                    initial={{ opacity: 0, scale: 0.8, x: "-50%", y: "-50%" }}
+                    whileInView={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.3 + i * 0.1 }}
+                    whileHover={{ scale: 1.08, x: "-50%", y: "-50%" }}
+                    className="absolute cursor-pointer"
+                    style={{ left: n.left, top: n.top }}
+                  >
+                    <div
+                      className="pointer-events-none absolute -inset-3 rounded-full blur-xl opacity-0 transition-opacity duration-300 hover:opacity-100"
+                      style={{ background: `radial-gradient(closest-side, ${n.ring}, transparent)` }}
+                    />
+                    <div className="relative flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                      <span
+                        className="h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: n.color, boxShadow: `0 0 8px ${n.color}` }}
+                      />
+                      <span className="text-[11px] font-medium text-white/85">{n.label}</span>
+                    </div>
+                  </motion.div>
+                ))}
 
                 {/* Zoom & Viewport Mini Controls Pod */}
                 <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-black/70 px-2 py-1 backdrop-blur-md">

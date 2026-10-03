@@ -89,7 +89,7 @@ const SVG = ({ className = "h-8 w-8" }: { className?: string }) => (
 );
 
 export function Logo({
-  className = "h-8 w-8",
+  className = "h-10 w-10",
   withWordmark = false,
   iconSrc,
 }: {
@@ -100,7 +100,7 @@ export function Logo({
 }) {
   const Mark = iconSrc ? (
     <span className={`relative ${className}`}>
-      <Image src={iconSrc} alt="TrueDocs" fill sizes="64px" className="object-contain" />
+      <Image src={iconSrc} alt="TrueDocs" fill sizes="80px" className="object-contain" />
     </span>
   ) : (
     <SVG className={className} />
@@ -109,9 +109,9 @@ export function Logo({
   if (!withWordmark) return <span className="inline-flex">{Mark}</span>;
 
   return (
-    <span className="inline-flex items-center gap-2.5">
+    <span className="inline-flex items-center gap-3">
       {Mark}
-      <span className="text-[17px] font-semibold tracking-tight text-white">
+      <span className="text-[21px] font-semibold tracking-tight text-white">
         TrueDocs
       </span>
     </span>

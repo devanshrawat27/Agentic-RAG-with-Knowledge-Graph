@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PROTECTED = ["/dashboard", "/chat", "/graph", "/documents", "/settings"];
+const PROTECTED = ["/dashboard", "/chat", "/graph", "/documents", "/collections", "/settings"];
 const AUTH_PAGES = ["/login", "/signup", "/forgot-password", "/reset-password"];
 
 export function middleware(request: NextRequest) {
@@ -21,7 +21,7 @@ export function middleware(request: NextRequest) {
   const isAuthPage = AUTH_PAGES.includes(pathname);
   if (isAuthPage && hasSession) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/chat";
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -35,6 +35,7 @@ export const config = {
     "/chat/:path*",
     "/graph/:path*",
     "/documents/:path*",
+    "/collections/:path*",
     "/settings/:path*",
     "/login",
     "/signup",

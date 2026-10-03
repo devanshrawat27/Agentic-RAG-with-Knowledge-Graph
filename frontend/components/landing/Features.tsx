@@ -3,10 +3,20 @@
 import { motion } from "framer-motion";
 import { Container } from "./primitives";
 
-const FEATURES = [
+interface Feature {
+  title: string;
+  body: string;
+  accent: string;
+  accentGlow: string;
+  icon: React.ReactNode;
+}
+
+const FEATURES: Feature[] = [
   {
     title: "Agentic RAG",
     body: "AI agents plan, search, and reason across your documents to give accurate answers.",
+    accent: "#38bdf8",
+    accentGlow: "rgba(56, 189, 248, 0.22)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
         <path
@@ -23,6 +33,8 @@ const FEATURES = [
   {
     title: "Knowledge Graph",
     body: "Automatically extract entities and relationships to uncover deeper insights.",
+    accent: "#a78bfa",
+    accentGlow: "rgba(167, 139, 250, 0.22)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
         <circle cx="5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
@@ -41,6 +53,8 @@ const FEATURES = [
   {
     title: "Source-Grounded Answers",
     body: "Every answer is backed with original sources and citations.",
+    accent: "#34d399",
+    accentGlow: "rgba(52, 211, 153, 0.22)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
         <path
@@ -62,6 +76,8 @@ const FEATURES = [
   {
     title: "Multi-Document Support",
     body: "Works with PDFs, Docs, PPTs, CSV, and more.",
+    accent: "#60a5fa",
+    accentGlow: "rgba(96, 165, 250, 0.22)",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6">
         <rect
@@ -103,42 +119,67 @@ export function Features() {
           transition={{ duration: 0.6 }}
           className="text-center"
         >
-          {/* Badge matching reference */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3.5 py-1.5 text-[12px] font-medium text-white/70 backdrop-blur-xl">
-            <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-4 py-1.5 text-[12px] font-medium text-white/85 backdrop-blur-xl shadow-[0_2px_12px_rgba(0,0,0,0.4)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_#60a5fa]" />
             Everything You Need
           </div>
 
-          <h2 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+          <h2 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-[52px] md:leading-[1.12]">
             Powerful Features for Smarter Work
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-[15px] text-white/50">
+          <p className="mx-auto mt-4 max-w-xl text-[15px] text-white/55 sm:text-base leading-relaxed">
             Built for researchers, teams, and businesses who work with complex documents.
           </p>
         </motion.div>
 
-        <div className="mt-16 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-5">
+        <div className="mt-14 md:mt-16 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4 md:gap-4">
           {FEATURES.map((f, i) => (
             <motion.div
               key={f.title}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              whileHover={{ y: -4, transition: { type: "spring", stiffness: 400, damping: 20 } }}
-              className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0c0d12]/60 p-6 backdrop-blur-md transition-all duration-300 hover:border-white/[0.18] hover:bg-[#10121a]/80 hover:shadow-[0_8px_30px_-10px_rgba(0,0,0,0.8)]"
+              transition={{ duration: 0.5, delay: i * 0.07 }}
+              whileHover={{ y: -3 }}
+              className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.04] via-white/[0.015] to-transparent p-5 sm:p-6 backdrop-blur-md transition-all duration-300 hover:border-white/[0.18] hover:bg-gradient-to-b hover:from-white/[0.07] hover:via-white/[0.025] hover:to-transparent hover:shadow-[0_18px_50px_-15px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.12)]"
             >
-              <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/[0.2] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-white/[0.25] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+              <div
+                className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 blur-2xl -z-10"
+                style={{ background: `radial-gradient(420px 160px at 50% 0%, ${f.accentGlow}, transparent 70%)` }}
+              />
 
               <div className="relative">
-                {/* Glossy dark squircle icon box */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.1] bg-white/[0.04] text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)] transition-all duration-300 group-hover:border-white/[0.22] group-hover:text-white group-hover:shadow-[0_0_20px_-4px_rgba(59,130,246,0.3)]">
-                  {f.icon}
+                <div
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border bg-gradient-to-br from-white/[0.08] via-white/[0.02] to-black text-white/85 shadow-[inset_0_1px_1px_rgba(255,255,255,0.18),0_2px_8px_rgba(0,0,0,0.5)] transition-all duration-300"
+                  style={{
+                    borderColor: "rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <span
+                    className="transition-colors duration-300"
+                    style={{ color: f.accent }}
+                  >
+                    {f.icon}
+                  </span>
                 </div>
-                <h3 className="mt-5 text-[16px] font-semibold text-white tracking-tight">{f.title}</h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-white/50">
+                <div
+                  className="absolute left-0 top-0 h-12 w-12 rounded-xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 blur-xl pointer-events-none"
+                  style={{ backgroundColor: f.accentGlow }}
+                />
+
+                <h3 className="mt-5 text-[15.5px] font-semibold tracking-tight text-white">
+                  {f.title}
+                </h3>
+                <p className="mt-2 text-[13px] leading-relaxed text-white/55">
                   {f.body}
                 </p>
+
+                <div
+                  className="mt-5 h-[1.5px] w-0 transition-all duration-500 group-hover:w-12"
+                  style={{ backgroundColor: f.accent, boxShadow: `0 0 8px ${f.accent}` }}
+                />
               </div>
             </motion.div>
           ))}

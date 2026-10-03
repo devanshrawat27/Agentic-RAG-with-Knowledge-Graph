@@ -42,7 +42,7 @@ export function Footer() {
       <Container>
         <div className="grid gap-10 md:grid-cols-[1.4fr_2fr]">
           <div>
-            <Logo withWordmark />
+            <Logo withWordmark iconSrc="/Futuristic Folded Ribbon Emblem.png" />
             <p className="mt-4 max-w-sm text-[13.5px] leading-relaxed text-white/40">
               TrueDocs turns documents into structured, searchable,
               verifiable knowledge — powered by Agentic AI and Knowledge Graphs.

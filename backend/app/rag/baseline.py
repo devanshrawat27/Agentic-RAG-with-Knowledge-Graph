@@ -7,7 +7,7 @@ Verifier, so its output is the baseline to compare against.
 
 import logging
 
-from app.core.llm import content_to_text, get_llm
+from app.core.llm import content_to_text, get_llm_with_fallback
 from app.rag.retrieval import format_evidence, retrieve_vector
 
 logger = logging.getLogger("app.rag.baseline")
@@ -43,7 +43,7 @@ def answer_baseline(
         }
 
     prompt = _PROMPT.format(context=format_evidence(evidence), question=question)
-    llm = get_llm(temperature=temperature)
+    llm = get_llm_with_fallback(temperature=temperature)
     try:
         response = llm.invoke([("system", _SYSTEM), ("human", prompt)])
         answer = content_to_text(response.content).strip()

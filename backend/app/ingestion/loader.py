@@ -1,9 +1,9 @@
-"""Document loader: read PDF / DOCX / TXT bytes into plain text."""
+"""Document loader: read PDF / DOCX / PPTX / TXT bytes into plain text."""
 
 from io import BytesIO
 from pathlib import Path
 
-SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".pptx", ".txt", ".md"}
 
 
 class UnsupportedDocumentError(ValueError):
@@ -38,6 +38,20 @@ def load_docx(data: bytes) -> str:
     return "\n".join(p.text for p in document.paragraphs)
 
 
+def load_pptx(data: bytes) -> str:
+    from pptx import Presentation
+
+    presentation = Presentation(BytesIO(data))
+    lines: list[str] = []
+    for slide in presentation.slides:
+        for shape in slide.shapes:
+            if shape.has_text_frame:
+                text = shape.text_frame.text.strip()
+                if text:
+                    lines.append(text)
+    return "\n".join(lines)
+
+
 def load_document(filename: str, data: bytes) -> str:
     """Extract text from a document's raw bytes based on its extension."""
     ext = _extension(filename)
@@ -45,6 +59,8 @@ def load_document(filename: str, data: bytes) -> str:
         text = load_pdf(data)
     elif ext == ".docx":
         text = load_docx(data)
+    elif ext == ".pptx":
+        text = load_pptx(data)
     elif ext in {".txt", ".md"}:
         text = load_txt(data)
     else:

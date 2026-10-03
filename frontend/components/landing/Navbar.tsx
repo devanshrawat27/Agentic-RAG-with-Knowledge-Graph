@@ -32,9 +32,9 @@ export function Navbar() {
             : "border-white/[0.08] bg-[#07080b]/60 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.4)]"
         }`}
       >
-        {/* Logo with 3D diamond mark */}
+        {/* Logo with ribbon emblem mark */}
         <a href="#" aria-label="TrueDocs home" className="relative z-10">
-          <Logo withWordmark />
+          <Logo withWordmark iconSrc="/Futuristic Folded Ribbon Emblem.png" />
         </a>
 
         {/* Desktop nav links */}
