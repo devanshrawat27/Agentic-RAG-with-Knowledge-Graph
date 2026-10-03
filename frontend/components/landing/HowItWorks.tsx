@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Container, SectionHeading } from "./primitives";
 
@@ -68,8 +68,6 @@ const STEPS = [
     ),
   },
 ];
-
-const STEP_INTERVAL = 2200;
 
 function StepCard({
   step,
@@ -434,15 +432,9 @@ function PlannerPanel({ activeStep }: { activeStep: number }) {
 /* -------------------------------------------------------------------------- */
 
 export function HowItWorks() {
+  // No auto-cycle — clicking a card jumps to that step. Active step defaults
+  // to 0 (Planner) and only changes on click/hover/keyboard interaction.
   const [activeStep, setActiveStep] = useState(0);
-
-  // Auto-cycle through the 4 steps; pause briefly at each
-  useEffect(() => {
-    const id = setInterval(() => {
-      setActiveStep((s) => (s + 1) % STEPS.length);
-    }, STEP_INTERVAL);
-    return () => clearInterval(id);
-  }, []);
 
   return (
     <section id="how-it-works" className="relative py-24 md:py-32">
