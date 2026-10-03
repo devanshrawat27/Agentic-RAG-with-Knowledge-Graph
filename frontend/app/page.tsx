@@ -3,7 +3,6 @@ import { Hero } from "@/components/landing/Hero";
 import { ProductShowcase } from "@/components/landing/ProductShowcase";
 import { Features } from "@/components/landing/Features";
 import { HowItWorks } from "@/components/landing/HowItWorks";
-import { TrustedSection } from "@/components/landing/TrustedSection";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
 
@@ -37,7 +36,6 @@ export default function Home() {
       <ProductShowcase />
       <Features />
       <HowItWorks />
-      <TrustedSection />
       <FinalCTA />
       <Footer />
     </main>

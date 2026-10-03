@@ -4,10 +4,10 @@ import { motion } from "framer-motion";
 import { HeroVisualization } from "./HeroVisualization";
 import { Badge, Container, GhostButton, PrimaryButton } from "./primitives";
 
-const STATS = [
-  { value: "10x", label: "Faster Insights" },
-  { value: "99%+", label: "Answer Accuracy" },
-  { value: "All", label: "Document Types" },
+const HIGHLIGHTS = [
+  { label: "Verified Answers", sub: "Source-grounded, never hallucinated" },
+  { label: "Multi-Document Reasoning", sub: "Connect facts across files" },
+  { label: "Works with All Document Types", sub: "PDF, DOCX, PPT, CSV & more" },
 ];
 
 export function Hero() {
@@ -83,26 +83,24 @@ export function Hero() {
               </GhostButton>
             </motion.div>
 
-            {/* Left: 3 Stats matching reference image */}
+            {/* Honest, unmeasured highlights (no unverified numbers) */}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 flex items-center gap-6 sm:gap-8 pt-2"
+              className="mt-12 grid w-full max-w-xl grid-cols-1 gap-5 pt-2 sm:grid-cols-3"
             >
-              {STATS.map((s, i) => (
-                <div key={s.label} className="flex items-center gap-6 sm:gap-8">
-                  <div>
-                    <div className="text-2xl font-semibold tracking-tight text-white sm:text-[26px]">
-                      {s.value}
-                    </div>
-                    <div className="mt-1 text-[13px] leading-tight text-white/45">
-                      {s.label}
-                    </div>
+              {HIGHLIGHTS.map((h) => (
+                <div key={h.label} className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/70" aria-hidden="true" />
+                    <span className="text-[13.5px] font-medium text-white">
+                      {h.label}
+                    </span>
                   </div>
-                  {i < STATS.length - 1 && (
-                    <div className="h-9 w-px bg-white/[0.1]" aria-hidden="true" />
-                  )}
+                  <span className="text-[12px] leading-snug text-white/50">
+                    {h.sub}
+                  </span>
                 </div>
               ))}
             </motion.div>
