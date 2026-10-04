@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMe, logout, type UserPublic } from "@/lib/api";
+import { useResizable } from "@/components/app/useResizable";
 
 const NAV_ITEMS = [
   {
@@ -62,6 +63,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [recentChats] = useState<string[]>([]);
 
+  const { size: sidebarWidth, onMouseDown: onSidebarDrag } = useResizable({
+    initial: 260,
+    min: 180,
+    max: 420,
+    storageKey: "truedocs:sidebarWidth",
+  });
+
   useEffect(() => {
     getMe()
       .then(setUser)
@@ -97,10 +105,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-emerald-500/[0.025] blur-3xl" />
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] flex-col border-r border-white/[0.05] bg-white/[0.015] lg:flex">
+      {/* Desktop sidebar — resizable */}
+      <aside
+        className="fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/[0.05] bg-white/[0.015] lg:flex"
+        style={{ width: sidebarWidth }}
+      >
         {sidebar}
       </aside>
+
+      {/* Sidebar resize handle — separate fixed element (avoids breaking sidebar flex layout) */}
+      <div
+        className="group fixed inset-y-0 z-50 hidden cursor-col-resize lg:flex lg:items-center lg:justify-center"
+        style={{ left: sidebarWidth - 3, width: 6 }}
+        onMouseDown={onSidebarDrag}
+        role="separator"
+        aria-orientation="vertical"
+      >
+        <div className="h-12 w-0.5 rounded-full bg-white/[0.06] transition-all duration-200 group-hover:bg-cyan-400/60" />
+      </div>
+
 
       {/* Mobile drawer */}
       <AnimatePresence>
@@ -126,8 +149,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      {/* Main */}
-      <div className="lg:pl-[260px]">
+      {/* Main — pad left by sidebar width */}
+      <div
+        className="transition-none"
+        style={{ paddingLeft: sidebarWidth }}
+      >
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-white/[0.05] bg-[#050505]/80 px-4 backdrop-blur-xl lg:hidden">
           <button
             onClick={() => setMobileOpen(true)}
@@ -150,6 +176,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
 
 function SidebarInner({
   pathname,
@@ -193,7 +220,7 @@ function SidebarInner({
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-2">
+      <nav className="flex-1 overflow-y-auto px-3 py-2 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08]">
         <div className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
