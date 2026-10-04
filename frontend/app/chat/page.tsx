@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { askQuestion, uploadDocument, type ChatResponse, type Citation } from "@/lib/api";
 import { AppShell } from "@/components/app/AppShell";
+import { useResizable } from "@/components/app/useResizable";
+import { DividerHandle } from "@/components/app/DividerHandle";
 
 interface Turn {
   question: string;
@@ -81,6 +83,14 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { size: sourcesWidth, onMouseDown: onSourcesDrag } = useResizable({
+    initial: 320,
+    min: 200,
+    max: 560,
+    inverted: true,
+    storageKey: "truedocs:sourcesWidth",
+  });
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
@@ -91,7 +101,6 @@ export default function ChatPage() {
         setAttachments((prev) =>
           prev.map((a) => (a.name === name ? { ...a, status: "ready", chunks: result.chunks } : a)),
         );
-        // Let the Documents page know the list changed.
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("documents:changed"));
         }
@@ -149,35 +158,38 @@ export default function ChatPage() {
 
   return (
     <AppShell>
-      <div className="flex">
-        {/* Main column */}
-        <div className="flex min-h-[calc(100vh-56px)] flex-1 flex-col lg:min-h-screen">
-          <div className="mx-auto w-full max-w-3xl flex-1 px-5 py-8 sm:px-8">
-            {!hasTurns ? (
-              <HeroInput
-                question={question}
-                setQuestion={setQuestion}
-                onSubmit={onSubmit}
-                onExample={ask}
-                attachments={attachments}
-                uploading={uploading}
-                onAttachClick={() => fileInputRef.current?.click()}
-                onRemoveAttachment={removeAttachment}
-              />
-            ) : (
-              <div className="space-y-8 pb-40">
-                {turns.map((turn, i) => (
-                  <TurnView key={i} turn={turn} />
-                ))}
-                <div ref={bottomRef} />
-              </div>
-            )}
+      {/* Three-panel layout: sidebar (in AppShell) | main chat | divider | sources */}
+      <div className="flex h-screen overflow-hidden">
+        {/* Main column — grows to fill remaining space */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-5 py-8 sm:px-8 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08]">
+            <div className="mx-auto w-full max-w-3xl">
+              {!hasTurns ? (
+                <HeroInput
+                  question={question}
+                  setQuestion={setQuestion}
+                  onSubmit={onSubmit}
+                  onExample={ask}
+                  attachments={attachments}
+                  uploading={uploading}
+                  onAttachClick={() => fileInputRef.current?.click()}
+                  onRemoveAttachment={removeAttachment}
+                />
+              ) : (
+                <div className="space-y-8 pb-40">
+                  {turns.map((turn, i) => (
+                    <TurnView key={i} turn={turn} />
+                  ))}
+                  <div ref={bottomRef} />
+                </div>
+              )}
+            </div>
           </div>
 
           {hasTurns && (
             <form
               onSubmit={onSubmit}
-              className="sticky bottom-0 w-full border-t border-white/[0.06] bg-[#050505]/90 backdrop-blur-xl"
+              className="w-full border-t border-white/[0.06] bg-[#050505]/90 backdrop-blur-xl"
             >
               <div className="mx-auto w-full max-w-3xl px-5 py-4 sm:px-8">
                 {attachments.length > 0 && (
@@ -219,8 +231,17 @@ export default function ChatPage() {
           )}
         </div>
 
-        {/* Right sources panel */}
-        <aside className="sticky top-0 hidden h-screen w-[320px] flex-shrink-0 border-l border-white/[0.05] bg-white/[0.012] xl:block">
+        {/* Drag divider between main and sources */}
+        <DividerHandle
+          onMouseDown={onSourcesDrag}
+          className="hidden xl:flex"
+        />
+
+        {/* Right sources panel — resizable */}
+        <aside
+          className="hidden h-screen flex-shrink-0 border-l border-white/[0.05] bg-white/[0.012] xl:block"
+          style={{ width: sourcesWidth }}
+        >
           <SourcesPanel citations={activeCitations} hasTurns={hasTurns} />
         </aside>
       </div>
@@ -228,6 +249,7 @@ export default function ChatPage() {
     </AppShell>
   );
 }
+
 
 function PaperclipIcon() {
   return (
@@ -534,7 +556,7 @@ function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns
       <div className="flex h-16 items-center border-b border-white/[0.05] px-5">
         <h2 className="text-[13.5px] font-semibold text-white">Sources</h2>
       </div>
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08] hover:[&::-webkit-scrollbar-thumb]:bg-white/[0.15]">
         {!hasTurns ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-white/30">
