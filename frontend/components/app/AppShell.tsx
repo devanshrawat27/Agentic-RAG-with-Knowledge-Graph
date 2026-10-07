@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { getMe, logout, type UserPublic } from "@/lib/api";
+import {
+  getMe,
+  listChats,
+  logout,
+  type ChatSummary,
+  type UserPublic,
+} from "@/lib/api";
 import { useResizable } from "@/components/app/useResizable";
 
 const NAV_ITEMS = [
@@ -61,7 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [user, setUser] = useState<UserPublic | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [recentChats] = useState<string[]>([]);
+  const [recentChats, setRecentChats] = useState<ChatSummary[]>([]);
 
   const { size: sidebarWidth, onMouseDown: onSidebarDrag } = useResizable({
     initial: 260,
@@ -75,6 +81,30 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .then(setUser)
       .catch(() => router.replace("/login"));
   }, [router]);
+
+  const loadChats = useCallback(() => {
+    listChats()
+      .then(setRecentChats)
+      .catch(() => {
+        /* unauthenticated or backend down — ignore */
+      });
+  }, []);
+
+  useEffect(() => {
+    loadChats();
+  }, [loadChats]);
+
+  // Refresh the recent-chats list whenever a new chat/message is created
+  // anywhere in the app.
+  useEffect(() => {
+    const onChanged = () => loadChats();
+    window.addEventListener("chats:changed", onChanged);
+    window.addEventListener("focus", onChanged);
+    return () => {
+      window.removeEventListener("chats:changed", onChanged);
+      window.removeEventListener("focus", onChanged);
+    };
+  }, [loadChats]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -186,7 +216,7 @@ function SidebarInner({
 }: {
   pathname: string;
   user: UserPublic | null;
-  recentChats: string[];
+  recentChats: ChatSummary[];
   onLogout: () => void;
 }) {
   return (
@@ -250,16 +280,17 @@ function SidebarInner({
             {recentChats.length === 0 ? (
               <p className="px-3 py-2 text-[12.5px] text-white/30">No recent chats yet</p>
             ) : (
-              recentChats.map((c, i) => (
-                <button
-                  key={i}
+              recentChats.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/chat?chat=${c.id}`}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-white/60 transition hover:bg-white/[0.03] hover:text-white/90"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   </svg>
-                  <span className="truncate">{c}</span>
-                </button>
+                  <span className="truncate">{c.title}</span>
+                </Link>
               ))
             )}
           </div>

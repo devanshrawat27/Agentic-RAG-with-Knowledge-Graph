@@ -5,6 +5,7 @@ import { Features } from "@/components/landing/Features";
 import { HowItWorks } from "@/components/landing/HowItWorks";
 import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Footer } from "@/components/landing/Footer";
+import { SmoothScroll } from "@/components/landing/SmoothScroll";
 
 function Grain() {
   return (
@@ -29,15 +30,17 @@ function Grain() {
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#050505] text-white antialiased">
-      <Grain />
-      <Navbar />
-      <Hero />
-      <ProductShowcase />
-      <Features />
-      <HowItWorks />
-      <FinalCTA />
-      <Footer />
-    </main>
+    <SmoothScroll>
+      <main className="relative min-h-screen bg-[#050505] text-white antialiased">
+        <Grain />
+        <Navbar />
+        <Hero />
+        <ProductShowcase />
+        <Features />
+        <HowItWorks />
+        <FinalCTA />
+        <Footer />
+      </main>
+    </SmoothScroll>
   );
 }

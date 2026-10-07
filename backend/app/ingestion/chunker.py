@@ -7,8 +7,10 @@ context that spans a boundary from being lost.
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-DEFAULT_CHUNK_SIZE = 1000
-DEFAULT_CHUNK_OVERLAP = 150
+# Larger chunks keep the embedding request count low (Gemini free tier caps
+# embeddings per minute), while overlap preserves cross-boundary context.
+DEFAULT_CHUNK_SIZE = 1600
+DEFAULT_CHUNK_OVERLAP = 200
 
 
 def get_splitter(

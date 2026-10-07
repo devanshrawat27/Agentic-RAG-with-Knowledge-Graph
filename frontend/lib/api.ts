@@ -175,15 +175,57 @@ export interface ChatResponse {
   answer: string;
   citations: Citation[];
   mode: string;
+  chat_id: number;
 }
 
 export function askQuestion(
   question: string,
   topK = 5,
   mode = "baseline",
+  chatId?: number | null,
 ): Promise<ChatResponse> {
   return request("/api/chat", {
     method: "POST",
-    body: JSON.stringify({ question, top_k: topK, mode }),
+    body: JSON.stringify({
+      question,
+      top_k: topK,
+      mode,
+      chat_id: chatId ?? null,
+    }),
   });
+}
+
+export interface ChatSummary {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MessageItem {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  citations: Citation[];
+  created_at: string;
+}
+
+export interface ChatDetail {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  messages: MessageItem[];
+}
+
+export function listChats(): Promise<ChatSummary[]> {
+  return request("/api/chats");
+}
+
+export function getChat(chatId: number): Promise<ChatDetail> {
+  return request(`/api/chats/${chatId}`);
+}
+
+export function deleteChat(chatId: number): Promise<void> {
+  return request(`/api/chats/${chatId}`, { method: "DELETE" });
 }

@@ -53,6 +53,7 @@ def _apply_dev_migrations() -> None:
         "ALTER TABLE documents ADD COLUMN IF NOT EXISTS doc_id VARCHAR(32)",
         "ALTER TABLE documents ADD COLUMN IF NOT EXISTS entity_count INTEGER DEFAULT 0",
         "ALTER TABLE documents ADD COLUMN IF NOT EXISTS relationship_count INTEGER DEFAULT 0",
+        "ALTER TABLE messages ADD COLUMN IF NOT EXISTS citations_json TEXT DEFAULT '[]'",
     ]
     with get_engine().begin() as conn:
         for stmt in statements:

@@ -1,8 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { askQuestion, uploadDocument, type ChatResponse, type Citation } from "@/lib/api";
+import {
+  askQuestion,
+  getChat,
+  uploadDocument,
+  type ChatResponse,
+  type Citation,
+} from "@/lib/api";
 import { AppShell } from "@/components/app/AppShell";
 import { useResizable } from "@/components/app/useResizable";
 import { DividerHandle } from "@/components/app/DividerHandle";
@@ -12,6 +19,12 @@ interface Turn {
   response?: ChatResponse;
   error?: string;
   loading?: boolean;
+}
+
+function notifyChatsChanged() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("chats:changed"));
+  }
 }
 
 interface Attachment {
@@ -75,11 +88,15 @@ const EXAMPLES = [
   },
 ];
 
-export default function ChatPage() {
+function ChatPage() {
+  const searchParams = useSearchParams();
+  const chatParam = searchParams.get("chat");
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [activeCitations, setActiveCitations] = useState<Citation[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [chatId, setChatId] = useState<number | null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -90,6 +107,60 @@ export default function ChatPage() {
     inverted: true,
     storageKey: "truedocs:sourcesWidth",
   });
+
+  // Load an existing chat when opened via ?chat=<id> (from Recent Chats).
+  useEffect(() => {
+    const id = chatParam ? Number(chatParam) : null;
+    if (!id || Number.isNaN(id)) {
+      // New chat
+      setChatId(null);
+      setTurns([]);
+      setActiveCitations([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingHistory(true);
+    getChat(id)
+      .then((detail) => {
+        if (cancelled) return;
+        setChatId(detail.id);
+        const rebuilt: Turn[] = [];
+        let pendingQuestion: string | null = null;
+        for (const m of detail.messages) {
+          if (m.role === "user") {
+            pendingQuestion = m.content;
+          } else if (m.role === "assistant" && pendingQuestion !== null) {
+            rebuilt.push({
+              question: pendingQuestion,
+              response: {
+                answer: m.content,
+                citations: m.citations,
+                mode: "baseline",
+                chat_id: detail.id,
+              },
+            });
+            pendingQuestion = null;
+          }
+        }
+        setTurns(rebuilt);
+        const lastCitations = rebuilt.length
+          ? rebuilt[rebuilt.length - 1].response?.citations ?? []
+          : [];
+        setActiveCitations(lastCitations);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setChatId(null);
+          setTurns([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingHistory(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [chatParam]);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -126,9 +197,11 @@ export default function ChatPage() {
     const index = turns.length;
     setTurns((prev) => [...prev, { question: trimmed, loading: true }]);
     try {
-      const response = await askQuestion(trimmed);
+      const response = await askQuestion(trimmed, 5, "baseline", chatId);
+      setChatId(response.chat_id);
       setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response } : t)));
       setActiveCitations(response.citations);
+      notifyChatsChanged();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Request failed";
       setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, error: message } : t)));
@@ -164,7 +237,17 @@ export default function ChatPage() {
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto px-5 py-8 sm:px-8 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08]">
             <div className="mx-auto w-full max-w-3xl">
-              {!hasTurns ? (
+              {loadingHistory ? (
+                <div className="flex min-h-[60vh] items-center justify-center">
+                  <div className="flex items-center gap-2.5 text-[13px] text-white/45">
+                    <svg className="h-4 w-4 animate-spin text-cyan-300" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+                      <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+                    </svg>
+                    Loading conversation…
+                  </div>
+                </div>
+              ) : !hasTurns ? (
                 <HeroInput
                   question={question}
                   setQuestion={setQuestion}
@@ -580,5 +663,13 @@ function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns
         )}
       </div>
     </div>
+  );
+}
+
+export default function ChatPageWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <ChatPage />
+    </Suspense>
   );
 }
