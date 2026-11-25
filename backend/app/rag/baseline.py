@@ -61,6 +61,11 @@ def _is_smalltalk(question: str) -> bool:
     return False
 
 
+def is_smalltalk(question: str) -> bool:
+    """Public check used by the chat route to keep greetings out of the pipeline."""
+    return _is_smalltalk(question)
+
+
 # Minimum cosine similarity for a chunk to count as real evidence. Below this
 # the "match" is only a nearest-neighbour artefact (e.g. greeting queries still
 # return *some* chunk), so we treat it as no relevant evidence.

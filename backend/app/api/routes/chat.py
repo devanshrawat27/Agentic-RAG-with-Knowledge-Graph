@@ -7,6 +7,7 @@ its full message history.
 """
 
 import json
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -15,7 +16,8 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_current_user
 from app.db.models import Chat, Message, User
 from app.db.postgres_client import get_db
-from app.rag.baseline import answer_baseline
+from app.pipeline.graph import run_pipeline
+from app.rag.baseline import answer_baseline, is_smalltalk
 from app.schemas.chat import (
     ChatDetail,
     ChatRequest,
@@ -24,7 +26,21 @@ from app.schemas.chat import (
     MessageOut,
 )
 
+logger = logging.getLogger("app.api.chat")
 router = APIRouter()
+
+
+def _verified_result(user_id: int, question: str, top_k: int) -> dict:
+    """Run the full Planner -> Retriever -> Verifier -> Answerer chain."""
+    state = run_pipeline(question, user_id, top_k=top_k)
+    return {
+        "answer": (state.get("final_answer") or "").strip(),
+        "citations": state.get("citations") or [],
+        "mode": "verified",
+        "claims": state.get("claims") or [],
+        "sub_questions": state.get("sub_questions") or [],
+        "loop_count": state.get("loop_count") or 0,
+    }
 
 
 def _title_from(question: str) -> str:
@@ -51,7 +67,20 @@ def chat(
         db.add(chat_row)
         db.flush()  # assign id
 
-    result = answer_baseline(current.id, payload.question, top_k=payload.top_k)
+    if payload.mode == "verified" and not is_smalltalk(payload.question):
+        try:
+            result = _verified_result(current.id, payload.question, payload.top_k)
+        except Exception as exc:  # noqa: BLE001 - surface a clean API error
+            logger.exception("verified pipeline failed")
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail="The verified pipeline failed. Please try again.",
+            ) from exc
+    else:
+        result = answer_baseline(current.id, payload.question, top_k=payload.top_k)
+        if payload.mode == "verified":
+            # Greetings/small talk are answered directly, not by the pipeline.
+            result = {**result, "mode": "chat"}
 
     citations = result["citations"]
     db.add(Message(chat_id=chat_row.id, role="user", content=payload.question))
@@ -70,6 +99,9 @@ def chat(
         "citations": citations,
         "mode": result["mode"],
         "chat_id": chat_row.id,
+        "claims": result.get("claims", []),
+        "sub_questions": result.get("sub_questions", []),
+        "loop_count": result.get("loop_count", 0),
     }
 
 
