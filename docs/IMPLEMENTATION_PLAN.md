@@ -98,18 +98,19 @@ fast demos.
 
 ---
 
-## Phase D — Multi-agent pipeline (Phase 2 of the roadmap)
+## Phase D — Multi-agent pipeline (Phase 2 of the roadmap) — DONE
 
 Goal: Planner → Retriever → Verifier → Answerer over LangGraph, user-scoped.
 
-- [ ] D1. Wire LangGraph graph (`pipeline/`) with `AgentState`
-- [ ] D2. Planner: LLM decomposes question → sub-questions
-- [ ] D3. Retriever: hybrid search (Qdrant vector + Neo4j traversal), merge/rank
-- [ ] D4. Verifier: per-claim check against evidence; loop back when unsupported
+- [x] D1. Wire LangGraph graph (`pipeline/`) with `AgentState`
+- [x] D2. Planner: LLM decomposes question → sub-questions
+- [x] D3. Retriever: hybrid search (Qdrant vector + Neo4j traversal), merge/rank
+- [x] D4. Verifier: per-claim check against evidence; loop back when unsupported
        (max-loop guard) — **core contribution**
-- [ ] D5. Answerer: final answer from verified claims only + citations
-- [ ] D6. `POST /api/chat` runs the pipeline (auth-scoped); persist chat/messages
-- [ ] D7. Decide status display: SSE streaming vs fixed-sequence status text
+- [x] D5. Answerer: final answer from verified claims only + citations
+- [x] D6. `POST /api/chat` runs the pipeline (auth-scoped); persist chat/messages
+- [x] D7. Decide status display: SSE streaming vs fixed-sequence status text
+       → decided: fixed-sequence (see `docs/FLOW.md`)
 
 Checkpoint D: multi-hop question answered by the full chain, with citations and
 a visible agent trace.
@@ -126,7 +127,7 @@ around the pipeline. This is where visual design decisions are made and applied.
 - [ ] E1. Chat dashboard (`/chat`): `ChatPanel`, `MessageList`, `AnswerCard`,
        `CitationList`, `AgentStatus`
 - [ ] E2. Chat history sidebar (per-user); open/continue chats (multi-turn context)
-- [ ] E3. `GET /api/graph` + Graph visualization (`/graph`) via react-force-graph
+- [x] E3. `GET /api/graph` + Graph visualization (`/graph`) via react-force-graph
 - [ ] E4. Source/citation viewer (open source chunk from a citation)
 
 Checkpoint E: ChatGPT-style experience — chat, history, citations, graph trace.

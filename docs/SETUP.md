@@ -79,6 +79,17 @@ uvicorn app.main:app --reload
 Health check: http://localhost:8000/api/health
 Import sanity check: `.\.venv\Scripts\python.exe -c "from app.main import app"`
 
+### Backend tests
+
+Tests mock Qdrant, Neo4j and the LLM, so they need no Docker containers or API
+keys.
+
+```powershell
+cd backend
+pip install -r requirements-dev.txt
+python -m pytest tests -q
+```
+
 ### Frontend
 
 ```powershell
