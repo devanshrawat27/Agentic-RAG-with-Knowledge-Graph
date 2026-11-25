@@ -196,6 +196,8 @@ docker compose up --build
   request/response models), `app/ingestion/` (loader/chunker/embedder/extractor).
 - **No comments** unless they add meaning (interface/docstring headers and
   `TODO(phase-N)` markers are fine).
+- **Tests:** backend tests live in `backend/tests/` (pytest). Mock Qdrant,
+  Neo4j and the LLM so the suite runs without Docker or API keys.
 - **Line endings:** `.gitattributes` normalizes to LF for text files.
 - **Git:** commit only when asked; stage only intended files; never commit secrets.
 
@@ -260,11 +262,17 @@ blocked on it.
 (Neo4j), `/api/documents` + `/api/chat` (baseline RAG), and `/documents` +
 `/chat` UIs. Verified with CUAD samples.
 
-**Agents (Phase D) have not started.** Next: Planner → Retriever (hybrid) →
-Verifier → Answerer per `docs/IMPLEMENTATION_PLAN.md`.
+**Phase E (frontend) in progress:** the existing dark/glass design system is the
+E0 baseline, and the chat UI, resizable history sidebar, citations/sources panel
+and fixed-sequence agent status already exist (E1/E2/E4). E3 is now done:
+`GET /api/graph` (auth-scoped, Neo4j snapshot, 65 backend tests) plus an
+interactive `react-force-graph` page with label filters, search, mentions
+toggle, node details and neighbours. Next: finish E1/E4 polish, then Phase F
+(evaluation) per `docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open items (resolve when reached; no need to block)
 
-- Streaming (SSE) vs fixed-sequence status text for the frontend during the
-  4-agent run.
+- ~~Streaming (SSE) vs fixed-sequence status text~~ — decided: fixed-sequence
+  status text, implemented in `components/chat/AgentStatus.tsx`. SSE is a later
+  enhancement.
 - Agent memory (multi-turn context) as a stretch goal after the core pipeline.

@@ -1,5 +1,5 @@
-"""Agent package — Planner, Retriever, Verifier, Answerer.
+"""Agent package: Planner, Retriever, Verifier, Answerer.
 
-Phase 1 scaffolding only: interfaces and graph state are defined so the
-pipeline topology is clear. Implementations come in Phase 2.
+All four nodes are implemented; `app/pipeline/graph.py` wires them into the
+LangGraph chain.
 """

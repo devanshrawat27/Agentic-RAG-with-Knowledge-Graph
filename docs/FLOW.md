@@ -152,14 +152,14 @@ Response: { final_answer, claims[], citations[], graph_trace }
    └─► GraphView highlights the nodes/edges actually used
 ```
 
-### Progress display (open item)
+### Progress display (decided)
 
-Two options while the pipeline runs — decide based on time left:
-- **SSE streaming**: each agent pushes status/partial result live (nicer UX,
-  more work). Endpoint `GET /api/chat/stream`.
-- **Fixed-sequence status text**: frontend shows a scripted sequence
-  ("Planning… → Retrieving… → Verifying… → Answering…") while awaiting the
-  single JSON response (simpler).
+**Fixed-sequence status text** (`components/chat/AgentStatus.tsx`): while the
+single `/api/chat` response is pending it shows
+"Planning → Retrieving → Verifying → Answering"; after the response it shows a
+real trace built from the payload (sub-question count, supported/total claims,
+extra retrieval loops, citation count). SSE streaming (`/api/chat/stream`) is
+deferred to a later enhancement.
 
 ### API surface (backend ↔ frontend)
 

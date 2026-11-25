@@ -162,6 +162,42 @@ export function listDocuments(): Promise<{ documents: DocumentItem[] }> {
   return request("/api/documents");
 }
 
+export interface GraphNode {
+  id: string;
+  label: string;
+  labels: string[];
+  name: string;
+  number: string;
+  summary: string;
+  date: string;
+}
+
+export interface GraphEdge {
+  id: string;
+  source: string;
+  target: string;
+  type: string;
+  doc_id: string;
+  chunk_id: string;
+}
+
+export interface GraphResponse {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  counts: { nodes: number; edges: number };
+}
+
+export function getGraph(params?: {
+  limit?: number;
+  includeMentions?: boolean;
+}): Promise<GraphResponse> {
+  const query = new URLSearchParams();
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.includeMentions) query.set("include_mentions", "true");
+  const qs = query.toString();
+  return request(`/api/graph${qs ? `?${qs}` : ""}`);
+}
+
 export interface Citation {
   index: number;
   doc_id: string | null;
@@ -171,11 +207,21 @@ export interface Citation {
   score: number | null;
 }
 
+export interface Claim {
+  text: string;
+  supported: boolean;
+  evidence_refs: number[];
+  reason: string;
+}
+
 export interface ChatResponse {
   answer: string;
   citations: Citation[];
   mode: string;
   chat_id: number;
+  claims?: Claim[];
+  sub_questions?: string[];
+  loop_count?: number;
 }
 
 export function askQuestion(
