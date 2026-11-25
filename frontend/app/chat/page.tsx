@@ -310,6 +310,9 @@ function ChatPage() {
                     </svg>
                   </button>
                 </div>
+                <p className="mt-2 text-center text-[10.5px] text-white/25">
+                  Answers are grounded in your uploaded documents.
+                </p>
               </div>
             </form>
           )}
@@ -534,6 +537,19 @@ function HeroInput({
 }
 
 function TurnView({ turn }: { turn: Turn }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyAnswer() {
+    if (!turn.response) return;
+    try {
+      await navigator.clipboard.writeText(turn.response.answer);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard may be unavailable */
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -543,7 +559,7 @@ function TurnView({ turn }: { turn: Turn }) {
     >
       {/* User question */}
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-[14px] text-white/95">
+        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.1] bg-gradient-to-br from-white/[0.075] to-white/[0.025] px-4 py-3 text-[14px] text-white/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           {turn.question}
         </div>
       </div>
@@ -565,27 +581,53 @@ function TurnView({ turn }: { turn: Turn }) {
           )}
 
           {turn.response && (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <VerificationBadge response={turn.response} />
-                <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
-                  {turn.response.mode}
-                </span>
-              </div>
-              <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-white/90">
-                {turn.response.answer}
-              </p>
-
-              {turn.response.citations.length > 0 && (
-                <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">
-                    Sources
-                  </p>
-                  {turn.response.citations.map((c) => (
-                    <CitationRow key={c.index} citation={c} />
-                  ))}
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.035] to-white/[0.012]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+              <div className="px-5 py-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <VerificationBadge response={turn.response} />
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
+                    {turn.response.mode}
+                  </span>
+                  {turn.response.citations.length > 0 && (
+                    <span className="text-[11px] text-white/30">
+                      · {turn.response.citations.length} source
+                      {turn.response.citations.length === 1 ? "" : "s"}
+                    </span>
+                  )}
+                  <button
+                    onClick={copyAnswer}
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/50 transition hover:border-white/[0.16] hover:text-white/85"
+                    title="Copy answer"
+                  >
+                    {copied ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="11" height="11" rx="2" />
+                        <path d="M5 15V5a2 2 0 0 1 2-2h8" />
+                      </svg>
+                    )}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
                 </div>
-              )}
+                <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-white/90">
+                  {turn.response.answer}
+                </p>
+
+                {turn.response.citations.length > 0 && (
+                  <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                      Sources
+                    </p>
+                    {turn.response.citations.map((c) => (
+                      <CitationRow key={c.index} citation={c} />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -596,23 +638,30 @@ function TurnView({ turn }: { turn: Turn }) {
 
 function CitationRow({ citation }: { citation: Citation }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white/90">
-          <span className="flex h-4.5 w-4.5 items-center justify-center rounded bg-cyan-500/15 text-[10px] font-mono font-bold text-cyan-300">
+    <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-cyan-400/25 hover:bg-white/[0.04]">
+      <div className="flex items-start justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-white/90">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-cyan-500/15 font-mono text-[10px] font-bold text-cyan-300">
             {citation.index}
           </span>
-          {citation.filename ?? citation.doc_id ?? "Source"}
+          <span className="truncate">
+            {citation.filename ?? citation.doc_id ?? "Source"}
+          </span>
         </span>
-        {typeof citation.score === "number" && (
-          <span className="text-[10.5px] font-mono text-white/40">
+        {typeof citation.score === "number" && citation.score >= 0.3 && (
+          <span className="flex-shrink-0 font-mono text-[10.5px] text-white/40">
             {(citation.score * 100).toFixed(1)}%
           </span>
         )}
       </div>
-      <p className="mt-1.5 line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
+      <p className="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
         {citation.snippet}
       </p>
+      {citation.chunk_id && (
+        <p className="mt-2 truncate font-mono text-[10px] text-white/25">
+          {citation.chunk_id}
+        </p>
+      )}
     </div>
   );
 }
@@ -620,8 +669,13 @@ function CitationRow({ citation }: { citation: Citation }) {
 function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns: boolean }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center border-b border-white/[0.05] px-5">
+      <div className="flex h-16 items-center justify-between border-b border-white/[0.05] px-5">
         <h2 className="text-[13.5px] font-semibold text-white">Sources</h2>
+        {hasTurns && (
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[10.5px] font-medium text-white/45">
+            {citations.length}
+          </span>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08] hover:[&::-webkit-scrollbar-thumb]:bg-white/[0.15]">
         {!hasTurns ? (
