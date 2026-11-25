@@ -13,6 +13,7 @@ import {
 import { AppShell } from "@/components/app/AppShell";
 import { useResizable } from "@/components/app/useResizable";
 import { DividerHandle } from "@/components/app/DividerHandle";
+import { AgentStatus, VerificationBadge } from "@/components/chat/AgentStatus";
 
 interface Turn {
   question: string;
@@ -135,7 +136,7 @@ function ChatPage() {
               response: {
                 answer: m.content,
                 citations: m.citations,
-                mode: "baseline",
+                mode: "verified",
                 chat_id: detail.id,
               },
             });
@@ -197,7 +198,7 @@ function ChatPage() {
     const index = turns.length;
     setTurns((prev) => [...prev, { question: trimmed, loading: true }]);
     try {
-      const response = await askQuestion(trimmed, 5, "baseline", chatId);
+      const response = await askQuestion(trimmed, 5, "verified", chatId);
       setChatId(response.chat_id);
       setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response } : t)));
       setActiveCitations(response.citations);
@@ -555,19 +556,7 @@ function TurnView({ turn }: { turn: Turn }) {
           </svg>
         </div>
         <div className="min-w-0 flex-1">
-          {turn.loading && (
-            <div className="flex items-center gap-2.5 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-              {[0, 1, 2].map((d) => (
-                <motion.span
-                  key={d}
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 1.2, repeat: Infinity, delay: d * 0.2 }}
-                  className="h-1.5 w-1.5 rounded-full bg-cyan-400"
-                />
-              ))}
-              <span className="text-[13px] text-white/50">Retrieving and verifying…</span>
-            </div>
-          )}
+          <AgentStatus loading={turn.loading} response={turn.response} />
 
           {turn.error && (
             <div className="rounded-2xl border border-red-500/30 bg-red-500/[0.06] px-4 py-3 text-[13px] text-red-300">
@@ -578,12 +567,7 @@ function TurnView({ turn }: { turn: Turn }) {
           {turn.response && (
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4">
               <div className="mb-3 flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/[0.08] px-2.5 py-1 text-[10.5px] font-semibold text-emerald-300">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-                    <path d="M20 6 9 17l-5-5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Verified
-                </span>
+                <VerificationBadge response={turn.response} />
                 <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
                   {turn.response.mode}
                 </span>

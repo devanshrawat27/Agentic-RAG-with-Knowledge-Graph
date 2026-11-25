@@ -171,11 +171,21 @@ export interface Citation {
   score: number | null;
 }
 
+export interface Claim {
+  text: string;
+  supported: boolean;
+  evidence_refs: number[];
+  reason: string;
+}
+
 export interface ChatResponse {
   answer: string;
   citations: Citation[];
   mode: string;
   chat_id: number;
+  claims?: Claim[];
+  sub_questions?: string[];
+  loop_count?: number;
 }
 
 export function askQuestion(
