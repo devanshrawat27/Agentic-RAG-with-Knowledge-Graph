@@ -19,6 +19,21 @@ html {
   scroll-behavior: smooth;
 }
 
+::selection {
+  background: rgba(56, 189, 248, 0.28);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(56, 189, 248, 0.45);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
 /* Lenis smooth scroll */
 html.lenis,
 html.lenis body {

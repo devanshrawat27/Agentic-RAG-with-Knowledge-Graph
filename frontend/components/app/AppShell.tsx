@@ -284,7 +284,7 @@ function SidebarInner({
                 <Link
                   key={c.id}
                   href={`/chat?chat=${c.id}`}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-white/60 transition hover:bg-white/[0.03] hover:text-white/90"
+                  className="flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-left text-[13px] text-white/60 transition hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-white/90"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -307,8 +307,14 @@ function SidebarInner({
             </svg>
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-white">{user?.name ?? "…"}</p>
-            <p className="truncate text-[11.5px] text-white/45">{user?.email ?? ""}</p>
+            <Link
+              href="/settings"
+              title="Open settings"
+              className="block rounded-lg px-1 py-0.5 transition hover:bg-white/[0.04]"
+            >
+              <p className="truncate text-[13px] font-semibold text-white">{user?.name ?? "…"}</p>
+              <p className="truncate text-[11.5px] text-white/45">{user?.email ?? ""}</p>
+            </Link>
           </div>
           <button
             onClick={onLogout}
