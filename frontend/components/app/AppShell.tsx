@@ -219,6 +219,15 @@ function SidebarInner({
   recentChats: ChatSummary[];
   onLogout: () => void;
 }) {
+  const initials =
+    (user?.name ?? "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "?";
+
   return (
     <>
       {/* Logo */}
@@ -300,11 +309,9 @@ function SidebarInner({
       {/* User + logout */}
       <div className="border-t border-white/[0.05] p-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 via-cyan-900/30 to-black text-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.3)]">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.12] bg-gradient-to-br from-slate-600/60 via-slate-800/70 to-black text-[11.5px] font-semibold tracking-wide text-white/90">
+            {initials}
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#050505] bg-emerald-400" />
           </div>
           <div className="min-w-0 flex-1">
             <Link
