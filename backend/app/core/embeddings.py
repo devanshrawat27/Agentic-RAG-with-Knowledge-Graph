@@ -1,12 +1,8 @@
-"""Embedding factory: Google Gemini primary, Hugging Face local fallback.
+"""Embedding factory: rotating Gemini keys primary, Hugging Face fallback.
 
-Both return a LangChain `Embeddings` object, so callers use `.embed_documents`
-and `.embed_query` the same way. The `embedding_dim` property lets the Qdrant
-client size collections correctly.
-
-Gemini's free tier caps embedding at ~100 requests/minute, so `embed_texts`
-sends small batches with pacing + retry/backoff to avoid blowing the quota on
-large documents.
+Like the chat model, embeddings rotate across all `GEMINI_API_KEYS`. A key that
+hits quota is cooled down and the next one is used. Batches remain paced so the
+free-tier per-minute cap is respected even with a single key.
 """
 
 import logging
@@ -16,6 +12,7 @@ from functools import lru_cache
 from langchain_core.embeddings import Embeddings
 
 from app.core.config import get_settings
+from app.core.keypool import ApiKeyPool, is_quota_error
 
 logger = logging.getLogger("app.core.embeddings")
 
@@ -24,16 +21,63 @@ _EMBED_BATCH = 25
 _MAX_RETRIES = 6
 
 
+class RotatingGeminiEmbeddings(Embeddings):
+    """GoogleGenerativeAIEmbeddings with per-call API-key rotation."""
+
+    def __init__(
+        self,
+        model_name: str,
+        keys: list[str],
+        cooldown_seconds: float = 60.0,
+    ):
+        self._model_name = model_name
+        self._pool = ApiKeyPool(keys, cooldown_seconds=cooldown_seconds)
+
+    def _run(self, call):
+        from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+        last_error: Exception | None = None
+        for _ in range(len(self._pool)):
+            key = self._pool.acquire()
+            if key is None:
+                break
+            try:
+                model = GoogleGenerativeAIEmbeddings(
+                    model=self._model_name,
+                    google_api_key=key,
+                )
+                result = call(model)
+                self._pool.mark_ok(key)
+                return result
+            except Exception as exc:  # noqa: BLE001 - inspect quota errors
+                if not is_quota_error(exc):
+                    raise
+                self._pool.mark_failed(key)
+                last_error = exc
+
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError(
+            "All Gemini API keys are cooling down; try again shortly"
+        )
+
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        return self._run(lambda model: model.embed_documents(texts))
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._run(lambda model: model.embed_query(text))
+
+
 @lru_cache
 def _gemini_embeddings() -> Embeddings:
-    from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
     settings = get_settings()
-    if not settings.gemini_api_key:
-        raise RuntimeError("GEMINI_API_KEY is not set")
-    return GoogleGenerativeAIEmbeddings(
-        model=settings.gemini_embedding_model,
-        google_api_key=settings.gemini_api_key,
+    keys = settings.all_gemini_api_keys
+    if not keys:
+        raise RuntimeError("GEMINI_API_KEY or GEMINI_API_KEYS is not set")
+    return RotatingGeminiEmbeddings(
+        model_name=settings.gemini_embedding_model,
+        keys=keys,
+        cooldown_seconds=settings.gemini_key_cooldown_seconds,
     )
 
 
@@ -60,11 +104,6 @@ def get_embedding_dim() -> int:
     return settings.gemini_embedding_dim
 
 
-def _is_quota_error(exc: Exception) -> bool:
-    msg = str(exc)
-    return "429" in msg or "RESOURCE_EXHAUSTED" in msg or "quota" in msg.lower()
-
-
 def embed_texts(texts: list[str]) -> list[list[float]]:
     """Embed many texts in paced batches with retry/backoff on 429.
 
@@ -83,7 +122,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
                 out.extend(emb.embed_documents(batch))
                 break
             except Exception as exc:  # noqa: BLE001
-                if not _is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
+                if not is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
                     raise
                 wait = min(60, 5 * (2**attempt))
                 logger.warning(
@@ -104,7 +143,7 @@ def embed_query(text: str) -> list[float]:
         try:
             return emb.embed_query(text)
         except Exception as exc:  # noqa: BLE001
-            if not _is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
+            if not is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
                 raise
             time.sleep(min(30, 4 * (2**attempt)))
     return emb.embed_query(text)  # unreachable, satisfies type checkers

@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     # --- LLM ---
     # gemini-2.0-flash is retired; gemini-flash-latest tracks the current flash.
     gemini_api_key: str = ""
+    # Extra free-tier keys, comma/newline separated (or a JSON array). When one
+    # key hits quota it is cooled down and the next key is used.
+    gemini_api_keys: str = ""
+    gemini_key_cooldown_seconds: int = 60
     gemini_model: str = "gemini-flash-latest"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.1:8b"
@@ -86,6 +90,12 @@ class Settings(BaseSettings):
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+
+    @property
+    def all_gemini_api_keys(self) -> list[str]:
+        from app.core.keypool import parse_api_keys
+
+        return parse_api_keys(self.gemini_api_keys, self.gemini_api_key)
 
 
 @lru_cache
