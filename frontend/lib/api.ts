@@ -96,6 +96,26 @@ export function getMe(): Promise<UserPublic> {
   return request("/api/auth/me");
 }
 
+export function updateProfile(name: string): Promise<UserPublic> {
+  return request("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  return request("/api/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+  });
+}
+
 export function verifyEmail(token: string): Promise<{ message: string }> {
   return request("/api/auth/verify-email", {
     method: "POST",

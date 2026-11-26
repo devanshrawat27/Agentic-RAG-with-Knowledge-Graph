@@ -82,6 +82,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .catch(() => router.replace("/login"));
   }, [router]);
 
+  useEffect(() => {
+    const onUserChanged = () => {
+      getMe()
+        .then(setUser)
+        .catch(() => {
+          /* ignore */
+        });
+    };
+    window.addEventListener("user:changed", onUserChanged);
+    return () => window.removeEventListener("user:changed", onUserChanged);
+  }, []);
+
   const loadChats = useCallback(() => {
     listChats()
       .then(setRecentChats)
