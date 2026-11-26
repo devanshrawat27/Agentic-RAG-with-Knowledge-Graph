@@ -433,7 +433,7 @@ function HeroInput({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <AssistantAvatar size={56} rounded="rounded-2xl" className="mb-5" />
+        <AssistantAvatar size={56} className="mb-5" />
         <h1 className="text-[30px] font-semibold tracking-tight text-white sm:text-[36px]">
           Ask your documents
         </h1>

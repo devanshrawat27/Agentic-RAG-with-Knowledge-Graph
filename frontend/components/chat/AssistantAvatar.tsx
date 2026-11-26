@@ -2,59 +2,80 @@
 
 export function AssistantAvatar({
   size = 32,
-  rounded = "rounded-xl",
   className = "",
 }: {
   size?: number;
-  rounded?: string;
   className?: string;
 }) {
   return (
     <span
-      className={`relative inline-flex flex-shrink-0 items-center justify-center overflow-hidden border border-cyan-400/30 bg-gradient-to-br from-cyan-500/[0.18] via-[#071018] to-black shadow-[0_0_18px_rgba(6,182,212,0.22)] ${rounded} ${className}`}
+      className={`relative inline-flex flex-shrink-0 items-center justify-center ${className}`}
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <svg viewBox="0 0 32 32" fill="none" className="h-full w-full">
+      <svg viewBox="0 0 64 64" fill="none" className="h-full w-full">
         <defs>
-          <radialGradient id="assistant-avatar-glow" cx="50%" cy="42%" r="62%">
-            <stop offset="0%" stopColor="#67e8f9" stopOpacity="0.55" />
-            <stop offset="55%" stopColor="#22d3ee" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#0e7490" stopOpacity="0" />
+          <radialGradient id="orb-body" cx="36%" cy="28%" r="78%">
+            <stop offset="0%" stopColor="#f8fafc" />
+            <stop offset="16%" stopColor="#dbe3ec" />
+            <stop offset="42%" stopColor="#8b9aab" />
+            <stop offset="68%" stopColor="#3b4a5c" />
+            <stop offset="88%" stopColor="#111c2b" />
+            <stop offset="100%" stopColor="#030712" />
           </radialGradient>
-          <linearGradient
-            id="assistant-avatar-face"
-            x1="8"
-            y1="6"
-            x2="24"
-            y2="26"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="#e0f2fe" />
-            <stop offset="1" stopColor="#38bdf8" />
+          <radialGradient id="orb-core" cx="50%" cy="48%" r="52%">
+            <stop offset="0%" stopColor="#f0f9ff" stopOpacity="0.95" />
+            <stop offset="35%" stopColor="#7dd3fc" stopOpacity="0.55" />
+            <stop offset="70%" stopColor="#0ea5e9" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="orb-rim" x1="14" y1="10" x2="52" y2="56" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#ffffff" stopOpacity="0.9" />
+            <stop offset="38%" stopColor="#cbd5e1" stopOpacity="0.25" />
+            <stop offset="72%" stopColor="#0f172a" stopOpacity="0" />
           </linearGradient>
+          <radialGradient id="orb-floor" cx="50%" cy="100%" r="60%">
+            <stop offset="0%" stopColor="#020617" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#020617" stopOpacity="0" />
+          </radialGradient>
         </defs>
 
-        <circle cx="16" cy="16" r="15" fill="url(#assistant-avatar-glow)" />
+        <circle cx="32" cy="33.5" r="27" fill="#020617" opacity="0.55" />
+        <circle cx="32" cy="32" r="27" fill="url(#orb-body)" />
+        <circle cx="32" cy="32" r="27" fill="none" stroke="url(#orb-rim)" strokeWidth="1.4" />
+        <circle cx="32" cy="32" r="27" fill="url(#orb-floor)" />
 
-        <path
-          d="M16 6.2c-4.1 0-6.9 2.8-6.9 6.5v4.9c0 3.8 2.8 6.8 6.9 6.8s6.9-3 6.9-6.8v-4.9c0-3.7-2.8-6.5-6.9-6.5Z"
-          fill="#0b1a24"
-          stroke="url(#assistant-avatar-face)"
-          strokeWidth="1.2"
+        <ellipse
+          cx="23.5"
+          cy="20.5"
+          rx="11.5"
+          ry="6.5"
+          fill="#ffffff"
+          opacity="0.38"
+          transform="rotate(-28 23.5 20.5)"
+        />
+        <ellipse
+          cx="24.5"
+          cy="22"
+          rx="5"
+          ry="2.4"
+          fill="#ffffff"
+          opacity="0.55"
+          transform="rotate(-28 24.5 22)"
         />
 
-        <rect x="11.4" y="13.2" width="2.6" height="2.9" rx="1.3" fill="#67e8f9" />
-        <rect x="18" y="13.2" width="2.6" height="2.9" rx="1.3" fill="#67e8f9" />
+        <circle cx="32" cy="32" r="13" fill="url(#orb-core)" />
+        <circle cx="32" cy="32" r="13" fill="none" stroke="#bae6fd" strokeOpacity="0.22" strokeWidth="0.8" />
+        <circle cx="32" cy="32" r="3.2" fill="#f0f9ff" opacity="0.95" />
+        <circle cx="32" cy="32" r="5.4" fill="none" stroke="#e0f2fe" strokeOpacity="0.45" strokeWidth="0.7" />
+
         <path
-          d="M12.6 19.3c1 .9 2.1 1.3 3.4 1.3s2.4-.4 3.4-1.3"
-          stroke="#67e8f9"
-          strokeWidth="1.15"
+          d="M32 6a26 26 0 0 1 25.2 20"
+          stroke="#ffffff"
+          strokeOpacity="0.16"
+          strokeWidth="1.2"
           strokeLinecap="round"
         />
-
-        <path d="M16 6.2V4" stroke="#67e8f9" strokeWidth="1.1" strokeLinecap="round" />
-        <circle cx="16" cy="3.2" r="1.15" fill="#a5f3fc" />
       </svg>
     </span>
   );
