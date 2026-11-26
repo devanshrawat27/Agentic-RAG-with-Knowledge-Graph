@@ -129,6 +129,56 @@ def search_chunks(
     ]
 
 
+def get_chunk_context(
+    user_id: int, chunk_id: str, context: int = 1
+) -> list[dict]:
+    """Return a chunk plus its neighbours, scoped to the user's collection."""
+    if ":" not in chunk_id:
+        return []
+    doc_id, _, raw_index = chunk_id.rpartition(":")
+    try:
+        index = int(raw_index)
+    except ValueError:
+        return []
+    if index < 0:
+        return []
+
+    client = get_qdrant()
+    name = collection_name(user_id)
+    if not client.collection_exists(name):
+        return []
+
+    start = max(0, index - context)
+    ids = [_point_id(doc_id, i) for i in range(start, index + context + 1)]
+    points = client.retrieve(collection_name=name, ids=ids, with_payload=True)
+
+    chunks: list[dict] = []
+    for point in points:
+        payload = point.payload or {}
+        payload_chunk_id = payload.get("chunk_id")
+        if not payload_chunk_id:
+            continue
+        try:
+            chunk_index = int(payload.get("chunk_index"))
+        except (TypeError, ValueError):
+            continue
+        chunks.append(
+            {
+                "chunk_id": payload_chunk_id,
+                "chunk_index": chunk_index,
+                "doc_id": payload.get("doc_id"),
+                "filename": payload.get("filename"),
+                "text": payload.get("text") or "",
+                "is_focus": payload_chunk_id == chunk_id,
+            }
+        )
+
+    chunks.sort(key=lambda item: item["chunk_index"])
+    if not any(chunk["is_focus"] for chunk in chunks):
+        return []
+    return chunks
+
+
 def delete_document(user_id: int, doc_id: str) -> None:
     from qdrant_client.models import FieldCondition, Filter, MatchValue
 
