@@ -157,7 +157,7 @@ export default function SettingsPage() {
 
         {loading ? (
           <div className="mt-10 flex items-center justify-center gap-2.5 py-16 text-[13px] text-white/45">
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-cyan-400" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-white/70" />
             Loading settings…
           </div>
         ) : (
@@ -193,7 +193,7 @@ export default function SettingsPage() {
                       value={name}
                       onChange={(event) => setName(event.target.value)}
                       maxLength={120}
-                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-cyan-400/40"
+                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-white/20"
                     />
                   </label>
                   <label className="block">
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                     type="password"
                     value={currentPassword}
                     onChange={(event) => setCurrentPassword(event.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-cyan-400/40"
+                    className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-white/20"
                   />
                 </label>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -265,7 +265,7 @@ export default function SettingsPage() {
                       type="password"
                       value={newPassword}
                       onChange={(event) => setNewPassword(event.target.value)}
-                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-cyan-400/40"
+                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-white/20"
                     />
                   </label>
                   <label className="block">
@@ -278,7 +278,7 @@ export default function SettingsPage() {
                       onChange={(event) =>
                         setConfirmPassword(event.target.value)
                       }
-                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-cyan-400/40"
+                      className="mt-1.5 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-white outline-none transition focus:border-white/20"
                     />
                   </label>
                 </div>

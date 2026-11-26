@@ -322,7 +322,7 @@ export default function CollectionsPage() {
                 onSubmit={onCreate}
                 initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl border border-cyan-400/25 bg-cyan-500/[0.04] p-4"
+                className="rounded-2xl border border-white/15 bg-white/[0.03] p-4"
               >
                 <p className="text-[13px] font-semibold text-white">
                   New collection
@@ -333,7 +333,7 @@ export default function CollectionsPage() {
                   onChange={(event) => setNewName(event.target.value)}
                   placeholder="Collection name"
                   maxLength={120}
-                  className="mt-3 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-cyan-400/40"
+                  className="mt-3 w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-white/20"
                 />
                 <textarea
                   value={newDescription}
@@ -341,7 +341,7 @@ export default function CollectionsPage() {
                   placeholder="Description (optional)"
                   maxLength={500}
                   rows={2}
-                  className="mt-2 w-full resize-none rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-cyan-400/40"
+                  className="mt-2 w-full resize-none rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-white/20"
                 />
                 <div className="mt-3 flex gap-2">
                   <button
@@ -372,7 +372,7 @@ export default function CollectionsPage() {
               </div>
             ) : collections.length === 0 ? (
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.015] p-6 text-center">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-500/[0.06] text-cyan-300">
+                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-white/75">
                   <FolderIcon className="h-5 w-5" />
                 </div>
                 <p className="mt-3 text-[14px] font-medium text-white/80">
@@ -391,7 +391,7 @@ export default function CollectionsPage() {
                     onClick={() => setSelectedId(collection.id)}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
                       active
-                        ? "border-cyan-400/30 bg-gradient-to-r from-cyan-500/[0.08] to-white/[0.02]"
+                        ? "border-white/15 bg-gradient-to-r from-white/[0.06] to-white/[0.02]"
                         : "border-white/[0.06] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04]"
                     }`}
                   >
@@ -399,7 +399,7 @@ export default function CollectionsPage() {
                       <span className="flex min-w-0 items-center gap-2 text-[14px] font-semibold text-white">
                         <FolderIcon
                           className={`h-4 w-4 flex-shrink-0 ${
-                            active ? "text-cyan-300" : "text-white/40"
+                            active ? "text-white/75" : "text-white/40"
                           }`}
                         />
                         <span className="truncate">{collection.name}</span>
@@ -438,7 +438,7 @@ export default function CollectionsPage() {
               </div>
             ) : loadingDetail || !detail ? (
               <div className="flex h-full min-h-[420px] items-center justify-center gap-2.5 text-[13px] text-white/45">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-cyan-400" />
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/15 border-t-white/70" />
                 Loading collection…
               </div>
             ) : (
@@ -450,7 +450,7 @@ export default function CollectionsPage() {
                         value={editName}
                         onChange={(event) => setEditName(event.target.value)}
                         maxLength={120}
-                        className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[15px] font-semibold text-white outline-none focus:border-cyan-400/40"
+                        className="w-full rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[15px] font-semibold text-white outline-none focus:border-white/20"
                       />
                       <textarea
                         value={editDescription}
@@ -460,7 +460,7 @@ export default function CollectionsPage() {
                         maxLength={500}
                         rows={2}
                         placeholder="Description"
-                        className="mt-2 w-full resize-none rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-cyan-400/40"
+                        className="mt-2 w-full resize-none rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[13px] text-white outline-none placeholder:text-white/30 focus:border-white/20"
                       />
                       <div className="mt-2 flex gap-2">
                         <button
@@ -539,7 +539,7 @@ export default function CollectionsPage() {
                       {documents.length === 0 ? (
                         <Link
                           href="/documents"
-                          className="mt-3 text-[12.5px] font-medium text-cyan-300 hover:text-cyan-200"
+                          className="mt-3 text-[12.5px] font-medium text-white/75 hover:text-white/90"
                         >
                           Upload documents first →
                         </Link>
@@ -561,7 +561,7 @@ export default function CollectionsPage() {
                           key={doc.id}
                           className="flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
                         >
-                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-cyan-300/80">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03] text-white/70">
                             <svg
                               className="h-4 w-4"
                               viewBox="0 0 24 24"
@@ -623,7 +623,7 @@ export default function CollectionsPage() {
                       <select
                         value={addDocId}
                         onChange={(event) => setAddDocId(event.target.value)}
-                        className="min-w-0 flex-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[12.5px] text-white outline-none focus:border-cyan-400/40"
+                        className="min-w-0 flex-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-[12.5px] text-white outline-none focus:border-white/20"
                       >
                         <option value="" className="bg-[#0a0b0e]">
                           Add a document…

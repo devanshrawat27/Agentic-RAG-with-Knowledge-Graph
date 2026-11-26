@@ -20,7 +20,7 @@ export function AssistantAvatar({
         alt=""
         width={size}
         height={size}
-        className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(56,189,248,0.22)]"
+        className="h-full w-full object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.08)]"
         priority={size >= 48}
       />
     </span>

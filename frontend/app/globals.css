@@ -20,12 +20,12 @@ html {
 }
 
 ::selection {
-  background: rgba(56, 189, 248, 0.28);
+  background: rgba(255,255,255,0.28);
   color: #ffffff;
 }
 
 :focus-visible {
-  outline: 2px solid rgba(56, 189, 248, 0.45);
+  outline: 2px solid rgba(255,255,255,0.45);
   outline-offset: 2px;
 }
 

@@ -46,7 +46,7 @@ const EXAMPLES = [
   {
     title: "Summarize a document",
     query: "Summarize the key terms and obligations in the main agreement.",
-    accent: "#38bdf8",
+    accent: "#fbbf24",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -59,7 +59,7 @@ const EXAMPLES = [
   {
     title: "Find connections",
     query: "What is the relationship between the vendor and the liability cap?",
-    accent: "#a78bfa",
+    accent: "#f472b6",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="6" cy="6" r="2.5" />
@@ -84,7 +84,7 @@ const EXAMPLES = [
   {
     title: "Compare documents",
     query: "Compare the liability limits across all uploaded contracts.",
-    accent: "#60a5fa",
+    accent: "#fb923c",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="12" height="14" rx="2" />
@@ -269,7 +269,7 @@ function ChatPage() {
               {loadingHistory ? (
                 <div className="flex min-h-[60vh] items-center justify-center">
                   <div className="flex items-center gap-2.5 text-[13px] text-white/45">
-                    <svg className="h-4 w-4 animate-spin text-cyan-300" viewBox="0 0 24 24" fill="none">
+                    <svg className="h-4 w-4 animate-spin text-white/75" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
                       <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
@@ -412,7 +412,7 @@ function AttachmentChips({
             title={a.error}
           >
             {a.status === "uploading" ? (
-              <svg className="h-3.5 w-3.5 animate-spin text-cyan-300" viewBox="0 0 24 24" fill="none">
+              <svg className="h-3.5 w-3.5 animate-spin text-white/75" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
                 <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
@@ -476,7 +476,7 @@ function CollectionPicker({
         onChange={(event) =>
           onChange(event.target.value ? Number(event.target.value) : null)
         }
-        className="max-w-[220px] rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/80 outline-none transition hover:border-white/[0.16] focus:border-cyan-400/40"
+        className="max-w-[220px] rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/80 outline-none transition hover:border-white/[0.16] focus:border-white/20"
       >
         <option value="" className="bg-[#0a0b0e]">
           All documents
@@ -553,7 +553,7 @@ function HeroInput({
             />
           </div>
         )}
-        <div className="group relative flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-2 backdrop-blur-xl transition focus-within:border-white/[0.22] focus-within:shadow-[0_0_40px_-10px_rgba(56,189,248,0.4)]">
+        <div className="group relative flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-2 backdrop-blur-xl transition focus-within:border-white/[0.22] focus-within:shadow-[0_0_40px_-10px_rgba(255,255,255,0.10)]">
           <button
             type="button"
             onClick={onAttachClick}
@@ -681,7 +681,7 @@ function TurnView({ turn }: { turn: Turn }) {
 
           {turn.response && (
             <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.035] to-white/[0.012]">
-              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <div className="px-5 py-4">
                 <div className="mb-3 flex items-center gap-2">
                   <VerificationBadge response={turn.response} />
@@ -716,7 +716,7 @@ function TurnView({ turn }: { turn: Turn }) {
                   {turn.animate && !done ? (
                     <>
                       {displayed}
-                      <span className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-cyan-300/80 align-baseline" />
+                      <span className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-white/70 align-baseline" />
                     </>
                   ) : (
                     turn.response.answer
@@ -744,10 +744,10 @@ function TurnView({ turn }: { turn: Turn }) {
 
 function CitationRow({ citation }: { citation: Citation }) {
   return (
-    <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-cyan-400/25 hover:bg-white/[0.04]">
+    <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-white/15 hover:bg-white/[0.04]">
       <div className="flex items-start justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-white/90">
-          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-cyan-500/15 font-mono text-[10px] font-bold text-cyan-300">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-white/[0.06] font-mono text-[10px] font-bold text-white/75">
             {citation.index}
           </span>
           <span className="truncate">

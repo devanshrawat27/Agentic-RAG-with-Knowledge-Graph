@@ -10,12 +10,12 @@ const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
 
 export const NODE_COLORS: Record<string, string> = {
   Document: "#e2e8f0",
-  Vendor: "#38bdf8",
-  Contract: "#60a5fa",
+  Vendor: "#fbbf24",
+  Contract: "#fb923c",
   Clause: "#34d399",
-  Revision: "#a78bfa",
+  Revision: "#f472b6",
   Violation: "#f87171",
-  Person: "#f472b6",
+  Person: "#a3e635",
   Entity: "#94a3b8",
 };
 
@@ -82,7 +82,7 @@ export function GraphCanvas({
         linkColor={(link) =>
           link.type === "MENTIONS"
             ? "rgba(148,163,184,0.14)"
-            : "rgba(56,189,248,0.28)"
+            : "rgba(255,255,255,0.28)"
         }
         linkWidth={(link) => (link.type === "MENTIONS" ? 0.6 : 1.1)}
         linkDirectionalArrowLength={3.5}

@@ -143,7 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#050505] text-white">
       {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 top-1/3 h-[600px] w-[600px] rounded-full bg-cyan-500/[0.03] blur-3xl" />
+        <div className="absolute -left-40 top-1/3 h-[600px] w-[600px] rounded-full bg-white/[0.02] blur-3xl" />
         <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-emerald-500/[0.025] blur-3xl" />
       </div>
 
@@ -163,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         role="separator"
         aria-orientation="vertical"
       >
-        <div className="h-12 w-0.5 rounded-full bg-white/[0.06] transition-all duration-200 group-hover:bg-cyan-400/60" />
+        <div className="h-12 w-0.5 rounded-full bg-white/[0.06] transition-all duration-200 group-hover:bg-white/50" />
       </div>
 
 
@@ -250,7 +250,7 @@ function SidebarInner({
             alt="TrueDocs"
             width={40}
             height={40}
-            className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(56,189,248,0.35)]"
+            className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(255,255,255,0.10)]"
             priority
           />
           <span className="text-[20px] font-semibold tracking-tight">TrueDocs</span>
