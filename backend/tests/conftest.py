@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.api.deps import get_current_user
+from app.core.security import hash_password
 from app.db.models import Base, User
 from app.db.postgres_client import get_db
 from app.main import app
@@ -32,7 +33,7 @@ def client(db_session):
         id=1,
         name="Test User",
         email="test@example.com",
-        password_hash="hash",
+        password_hash=hash_password("Password123"),
         is_verified=True,
     )
     db_session.add(user)
