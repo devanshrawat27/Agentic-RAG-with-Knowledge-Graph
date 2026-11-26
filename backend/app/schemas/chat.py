@@ -12,6 +12,7 @@ class ChatRequest(BaseModel):
     # "baseline" = flat vector RAG (stage 1); "verified" = full agent pipeline.
     mode: Literal["baseline", "verified"] = "baseline"
     chat_id: int | None = Field(default=None)  # continue an existing chat
+    collection_id: int | None = Field(default=None)  # scope retrieval to a collection
 
 
 class Citation(BaseModel):
@@ -38,6 +39,7 @@ class ChatResponse(BaseModel):
     claims: list[Claim] = Field(default_factory=list)
     sub_questions: list[str] = Field(default_factory=list)
     loop_count: int = 0
+    collection_id: int | None = None
 
 
 class ChatSummary(BaseModel):

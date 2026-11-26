@@ -23,6 +23,7 @@ WHERE n.user_id = $user_id
         OR toLower(coalesce(n.date, '')) CONTAINS toLower(term))
 MATCH (n)-[r]-(m)
 WHERE m.user_id = $user_id
+  AND (NOT $scoped OR r.doc_id IN $doc_ids)
 RETURN labels(n) AS source_labels,
        coalesce(n.name, n.title, '') AS source_name,
        coalesce(n.number, '') AS source_number,
@@ -61,15 +62,31 @@ def _score(terms: list[str], row: object) -> float:
     return round(min(0.95, 0.6 + 0.1 * hits), 3)
 
 
-def search_graph(user_id: int, terms: list[str], limit: int = 10) -> list[dict]:
-    """Return one-hop facts around user-owned nodes matching `terms`."""
+def search_graph(
+    user_id: int,
+    terms: list[str],
+    limit: int = 10,
+    doc_ids: list[str] | None = None,
+) -> list[dict]:
+    """Return one-hop facts around user-owned nodes matching `terms`.
+
+    `doc_ids` scopes the facts to a collection's documents; an empty list
+    means the collection has nothing to search.
+    """
     cleaned = [t.strip() for t in terms if t and t.strip()]
     if not cleaned:
+        return []
+    if doc_ids is not None and not doc_ids:
         return []
 
     try:
         rows = run_query(
-            _GRAPH_QUERY, user_id=user_id, terms=cleaned, limit=limit
+            _GRAPH_QUERY,
+            user_id=user_id,
+            terms=cleaned,
+            limit=limit,
+            scoped=doc_ids is not None,
+            doc_ids=list(doc_ids or []),
         )
     except Exception as exc:  # noqa: BLE001 - graph store must not break the run
         logger.warning("graph search failed: %s", str(exc)[:200])

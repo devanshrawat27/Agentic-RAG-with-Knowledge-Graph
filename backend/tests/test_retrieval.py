@@ -1,3 +1,4 @@
+from app.core import vectorstore
 from app.rag import retrieval
 from app.rag.graph_retrieval import search_graph
 
@@ -136,7 +137,7 @@ def test_retrieve_hybrid_merges_and_filters_weak_vector(monkeypatch):
     monkeypatch.setattr(
         retrieval,
         "retrieve_vector",
-        lambda user_id, query, top_k=5: [
+        lambda user_id, query, top_k=5, doc_ids=None: [
             {
                 "text": "strong",
                 "chunk_id": "c1",
@@ -154,7 +155,7 @@ def test_retrieve_hybrid_merges_and_filters_weak_vector(monkeypatch):
     monkeypatch.setattr(
         retrieval,
         "search_graph",
-        lambda user_id, terms, limit=10: [
+        lambda user_id, terms, limit=10, doc_ids=None: [
             {"text": "fact", "chunk_id": "c3", "score": 0.8, "source": "graph"}
         ],
     )
@@ -169,3 +170,87 @@ def test_retrieve_hybrid_merges_and_filters_weak_vector(monkeypatch):
 
 def test_retrieve_hybrid_empty_queries():
     assert retrieval.retrieve_hybrid(1, ["", "   "]) == []
+
+
+def test_retrieve_hybrid_passes_doc_ids(monkeypatch):
+    seen = {}
+
+    def fake_vector(user_id, query, top_k=5, doc_ids=None):
+        seen["vector"] = doc_ids
+        return []
+
+    def fake_graph(user_id, terms, limit=10, doc_ids=None):
+        seen["graph"] = doc_ids
+        return []
+
+    monkeypatch.setattr(retrieval, "retrieve_vector", fake_vector)
+    monkeypatch.setattr(retrieval, "search_graph", fake_graph)
+
+    assert retrieval.retrieve_hybrid(1, ["q?"], doc_ids=["d1"]) == []
+    assert seen == {"vector": ["d1"], "graph": ["d1"]}
+
+
+def test_retrieve_hybrid_empty_scope_skips_stores(monkeypatch):
+    def fail(*args, **kwargs):
+        raise AssertionError("stores must not be queried for an empty collection")
+
+    monkeypatch.setattr(retrieval, "retrieve_vector", fail)
+    monkeypatch.setattr(retrieval, "search_graph", fail)
+
+    assert retrieval.retrieve_hybrid(1, ["q?"], doc_ids=[]) == []
+
+
+def test_search_graph_scopes_to_collection(monkeypatch):
+    calls = {}
+
+    def fake_run(query, **params):
+        calls["query"] = query
+        calls["params"] = params
+        return []
+
+    monkeypatch.setattr("app.rag.graph_retrieval.run_query", fake_run)
+
+    search_graph(1, ["Acme"], doc_ids=["d1"])
+
+    assert calls["params"]["scoped"] is True
+    assert calls["params"]["doc_ids"] == ["d1"]
+    assert "$doc_ids" in calls["query"]
+
+
+class _FakeQdrant:
+    def __init__(self):
+        self.kwargs = None
+
+    def collection_exists(self, name):
+        return True
+
+    def query_points(self, **kwargs):
+        self.kwargs = kwargs
+
+        class _Result:
+            points = []
+
+        return _Result()
+
+
+def test_search_chunks_scopes_doc_ids(monkeypatch):
+    fake = _FakeQdrant()
+    monkeypatch.setattr(vectorstore, "get_qdrant", lambda: fake)
+
+    result = vectorstore.search_chunks(
+        1, [0.1, 0.2], limit=3, doc_ids=["d1", "d2"]
+    )
+
+    assert result == []
+    condition = fake.kwargs["query_filter"].must[0]
+    assert condition.key == "doc_id"
+    assert condition.match.any == ["d1", "d2"]
+
+
+def test_search_chunks_empty_scope_returns_early(monkeypatch):
+    def fail():
+        raise AssertionError("Qdrant must not be queried for an empty scope")
+
+    monkeypatch.setattr(vectorstore, "get_qdrant", fail)
+
+    assert vectorstore.search_chunks(1, [0.1], doc_ids=[]) == []

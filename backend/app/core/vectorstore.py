@@ -7,7 +7,15 @@ similarity search can ever cross user boundaries (see docs/DATA_MODEL.md).
 from functools import lru_cache
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import (
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchAny,
+    MatchValue,
+    PointStruct,
+    VectorParams,
+)
 
 from app.core.config import get_settings
 from app.core.embeddings import get_embedding_dim
@@ -71,17 +79,42 @@ def upsert_chunks(
     return len(points)
 
 
-def search_chunks(user_id: int, query_vector: list[float], limit: int = 5) -> list[dict]:
-    """Search only the user's collection. Returns text + provenance payloads."""
+def search_chunks(
+    user_id: int,
+    query_vector: list[float],
+    limit: int = 5,
+    doc_ids: list[str] | None = None,
+) -> list[dict]:
+    """Search only the user's collection. Returns text + provenance payloads.
+
+    When `doc_ids` is provided, the search is restricted to those documents
+    (used for collection-scoped chat). An empty list means "nothing in scope".
+    """
+    if doc_ids is not None and not doc_ids:
+        return []
+
     client = get_qdrant()
     name = collection_name(user_id)
     if not client.collection_exists(name):
         return []
+
+    query_filter = None
+    if doc_ids is not None:
+        query_filter = Filter(
+            must=[
+                FieldCondition(
+                    key="doc_id",
+                    match=MatchAny(any=list(doc_ids)),
+                )
+            ]
+        )
+
     result = client.query_points(
         collection_name=name,
         query=query_vector,
         limit=limit,
         with_payload=True,
+        query_filter=query_filter,
     )
     return [
         {

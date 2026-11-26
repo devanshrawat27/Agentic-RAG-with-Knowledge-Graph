@@ -15,7 +15,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
-from app.db.models import Chat, Message, User
+from app.db.models import Chat, Collection, Message, User
 from app.db.postgres_client import get_db
 from app.pipeline.graph import run_pipeline
 from app.rag.baseline import answer_baseline, is_smalltalk
@@ -31,9 +31,11 @@ logger = logging.getLogger("app.api.chat")
 router = APIRouter()
 
 
-def _verified_result(user_id: int, question: str, top_k: int) -> dict:
+def _verified_result(
+    user_id: int, question: str, top_k: int, doc_ids: list[str] | None = None
+) -> dict:
     """Run the full Planner -> Retriever -> Verifier -> Answerer chain."""
-    state = run_pipeline(question, user_id, top_k=top_k)
+    state = run_pipeline(question, user_id, top_k=top_k, doc_ids=doc_ids)
     return {
         "answer": (state.get("final_answer") or "").strip(),
         "citations": state.get("citations") or [],
@@ -68,9 +70,25 @@ def chat(
         db.add(chat_row)
         db.flush()  # assign id
 
+    doc_ids: list[str] | None = None
+    if payload.collection_id is not None:
+        collection = db.get(Collection, payload.collection_id)
+        if collection is None or collection.user_id != current.id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Collection not found",
+            )
+        doc_ids = [
+            document.doc_id
+            for document in collection.documents
+            if document.doc_id
+        ]
+
     if payload.mode == "verified" and not is_smalltalk(payload.question):
         try:
-            result = _verified_result(current.id, payload.question, payload.top_k)
+            result = _verified_result(
+                current.id, payload.question, payload.top_k, doc_ids=doc_ids
+            )
         except Exception as exc:  # noqa: BLE001 - surface a clean API error
             logger.exception("verified pipeline failed")
             raise HTTPException(
@@ -78,7 +96,12 @@ def chat(
                 detail="The verified pipeline failed. Please try again.",
             ) from exc
     else:
-        result = answer_baseline(current.id, payload.question, top_k=payload.top_k)
+        result = answer_baseline(
+            current.id,
+            payload.question,
+            top_k=payload.top_k,
+            doc_ids=doc_ids,
+        )
         if payload.mode == "verified":
             # Greetings/small talk are answered directly, not by the pipeline.
             result = {**result, "mode": "chat"}
@@ -104,6 +127,7 @@ def chat(
         "claims": result.get("claims", []),
         "sub_questions": result.get("sub_questions", []),
         "loop_count": result.get("loop_count", 0),
+        "collection_id": payload.collection_id,
     }
 
 

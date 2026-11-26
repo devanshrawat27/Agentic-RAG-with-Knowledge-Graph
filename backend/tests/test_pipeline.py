@@ -30,7 +30,7 @@ def test_route_stops_looping_at_cap():
 def test_pipeline_runs_without_credentials(monkeypatch):
     monkeypatch.setattr(
         "app.agents.retriever.retrieve_hybrid",
-        lambda user_id, queries, top_k=5: [],
+        lambda user_id, queries, top_k=5, doc_ids=None: [],
     )
 
     state = run_pipeline("hello there", user_id=1)

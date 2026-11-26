@@ -3,7 +3,7 @@ import json
 from sqlalchemy import select
 
 from app.api.deps import get_current_user
-from app.db.models import Message, User
+from app.db.models import Collection, Document, Message, User
 from app.main import app
 
 VERIFIED_STATE = {
@@ -36,6 +36,24 @@ BASELINE_RESULT = {
     "mode": "baseline",
     "evidence": [],
 }
+
+
+def _collection(db, name="Scope", doc_ids=("d1",), user_id=1):
+    collection = Collection(user_id=user_id, name=name, description="")
+    for doc_id in doc_ids:
+        collection.documents.append(
+            Document(
+                user_id=user_id,
+                doc_id=doc_id,
+                filename=f"{doc_id}.txt",
+                status="ready",
+                chunk_count=3,
+            )
+        )
+    db.add(collection)
+    db.commit()
+    db.refresh(collection)
+    return collection
 
 
 def test_baseline_mode_is_default(client, monkeypatch):
@@ -162,3 +180,85 @@ def test_chats_are_user_scoped(client, db_session, monkeypatch):
     assert client.get(f"/api/chats/{chat_id}").status_code == 404
     assert client.delete(f"/api/chats/{chat_id}").status_code == 404
     assert client.get("/api/chats").json() == []
+
+
+def test_verified_chat_passes_collection_doc_ids(
+    client, db_session, monkeypatch
+):
+    collection = _collection(db_session, doc_ids=("d1", "d2"))
+    captured = {}
+
+    def fake_pipeline(question, user_id, top_k=5, doc_ids=None):
+        captured.update(user_id=user_id, doc_ids=doc_ids)
+        return VERIFIED_STATE
+
+    monkeypatch.setattr("app.api.routes.chat.run_pipeline", fake_pipeline)
+
+    response = client.post(
+        "/api/chat",
+        json={
+            "question": "Who breached clause 4.2?",
+            "mode": "verified",
+            "collection_id": collection.id,
+        },
+    )
+
+    assert response.status_code == 200
+    assert captured["doc_ids"] == ["d1", "d2"]
+    assert response.json()["collection_id"] == collection.id
+
+
+def test_baseline_chat_passes_collection_doc_ids(
+    client, db_session, monkeypatch
+):
+    collection = _collection(db_session, doc_ids=("d1",))
+    captured = {}
+
+    def fake_baseline(
+        user_id, question, top_k=5, temperature=0.0, doc_ids=None
+    ):
+        captured["doc_ids"] = doc_ids
+        return BASELINE_RESULT
+
+    monkeypatch.setattr("app.api.routes.chat.answer_baseline", fake_baseline)
+
+    response = client.post(
+        "/api/chat",
+        json={"question": "Any question?", "collection_id": collection.id},
+    )
+
+    assert response.status_code == 200
+    assert captured["doc_ids"] == ["d1"]
+
+
+def test_chat_rejects_another_users_collection(
+    client, db_session, monkeypatch
+):
+    other = User(
+        id=2,
+        name="Other",
+        email="other@example.com",
+        password_hash="hash",
+        is_verified=True,
+    )
+    db_session.add(other)
+    db_session.commit()
+    their_collection = _collection(
+        db_session, name="Theirs", doc_ids=("d2",), user_id=2
+    )
+
+    def boom(*args, **kwargs):
+        raise AssertionError("pipeline must not run for a foreign collection")
+
+    monkeypatch.setattr("app.api.routes.chat.run_pipeline", boom)
+
+    response = client.post(
+        "/api/chat",
+        json={
+            "question": "Who breached clause 4.2?",
+            "mode": "verified",
+            "collection_id": their_collection.id,
+        },
+    )
+
+    assert response.status_code == 404
