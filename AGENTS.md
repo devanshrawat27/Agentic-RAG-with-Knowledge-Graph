@@ -162,9 +162,9 @@ frontend, and set `secure=True`. Raise this before deploying.
 
 `GEMINI_API_KEYS` accepts comma/newline-separated keys (or a JSON array); the
 single `GEMINI_API_KEY` is still supported and is tried first. A key that hits
-quota/429 is cooled down for `GEMINI_KEY_COOLDOWN_SECONDS` and the next key is
-used for both chat and embeddings. Keys must never be logged or committed;
-`.env.example` only holds placeholders.
+quota/429, an invalid-key error, or a transient 503/high-demand response is
+cooled down and the next key is used for both chat and embeddings. Keys must
+never be logged or committed; `.env.example` only holds placeholders.
 
 ## Build / run commands
 

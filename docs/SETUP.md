@@ -50,10 +50,11 @@ The free tier is small, so you can provide several keys. Add them comma-separate
 GEMINI_API_KEYS=key1,key2,key3
 ```
 
-If a key returns `429` / quota, it is put on a short cooldown
-(`GEMINI_KEY_COOLDOWN_SECONDS`, default 60s) and the next key is used
-automatically — for both chat and embeddings. Keys are never logged. Never
-commit `.env`.
+If a key returns `429` / quota, an invalid-key error, or a transient `503`
+high-demand response, it is put on a short cooldown and the next key is used
+automatically — for both chat and embeddings. Transient provider errors use a
+shorter cooldown than exhausted keys. Keys are never logged. Never commit
+`.env`.
 
 `GET /api/health` reports `llm_key_count` without exposing the keys.
 
