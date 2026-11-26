@@ -74,6 +74,9 @@ docker compose up --build
 | PostgreSQL | localhost:5432 |
 
 Data persists in Docker volumes (`pgdata`, `neo4j-data`, `qdrant-storage`).
+Uploaded source files are kept under `backend/storage/` locally (Docker volume
+`backend-storage`) and are served only to the owning user via
+`/api/documents/by-doc/{doc_id}/file`.
 
 ## 3. Option B — run backend/frontend natively (dev, hot reload)
 
