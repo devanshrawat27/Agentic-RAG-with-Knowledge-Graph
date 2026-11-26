@@ -158,6 +158,14 @@ middleware (which only checks cookie presence) won't see it. Fix at deploy
 time: put both behind one domain/subdomain, or proxy `/api` through the
 frontend, and set `secure=True`. Raise this before deploying.
 
+## Gemini key rotation (operational)
+
+`GEMINI_API_KEYS` accepts comma/newline-separated keys (or a JSON array); the
+single `GEMINI_API_KEY` is still supported and is tried first. A key that hits
+quota/429 is cooled down for `GEMINI_KEY_COOLDOWN_SECONDS` and the next key is
+used for both chat and embeddings. Keys must never be logged or committed;
+`.env.example` only holds placeholders.
+
 ## Build / run commands
 
 ### Backend (Windows PowerShell, from `backend/`)

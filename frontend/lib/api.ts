@@ -6,6 +6,7 @@ export interface HealthResponse {
   service: string;
   version: string;
   llm_configured: boolean;
+  llm_key_count?: number;
   embedding_provider: string;
 }
 
