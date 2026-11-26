@@ -235,7 +235,7 @@ function ChatPage() {
     try {
       const response = await askQuestion(
         trimmed,
-        5,
+        8,
         "verified",
         chatId,
         collectionId,

@@ -55,7 +55,7 @@ def build_graph():
 def run_pipeline(
     question: str,
     user_id: int,
-    top_k: int = 5,
+    top_k: int = 8,
     doc_ids: list[str] | None = None,
 ) -> AgentState:
     """Run the full agent chain for one question, scoped to a single user."""

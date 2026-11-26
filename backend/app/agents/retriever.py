@@ -15,7 +15,7 @@ def retrieve(state: AgentState) -> AgentState:
         return {"evidence": [], "needs_more_evidence": False}
 
     queries = state.get("sub_questions") or [question]
-    top_k = state.get("top_k") or 5
+    top_k = state.get("top_k") or 8
 
     try:
         evidence = retrieve_hybrid(

@@ -92,7 +92,7 @@ def _as_chat(question: str, user_id: int, temperature: float) -> dict:
 def answer_baseline(
     user_id: int,
     question: str,
-    top_k: int = 5,
+    top_k: int = 8,
     temperature: float = 0.0,
     doc_ids: list[str] | None = None,
 ) -> dict:

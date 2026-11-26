@@ -43,7 +43,7 @@ _CAPITALIZED = re.compile(
 def retrieve_vector(
     user_id: int,
     query: str,
-    top_k: int = 5,
+    top_k: int = 8,
     doc_ids: list[str] | None = None,
 ) -> list[dict]:
     """Return the top-k relevant chunks for a user, scoped to them only."""
@@ -163,7 +163,7 @@ def merge_rank(
 def retrieve_hybrid(
     user_id: int,
     queries: list[str],
-    top_k: int = 5,
+    top_k: int = 8,
     doc_ids: list[str] | None = None,
 ) -> list[dict]:
     """Vector + graph retrieval for one or more sub-questions."""

@@ -345,7 +345,7 @@ export interface ChatResponse {
 
 export function askQuestion(
   question: string,
-  topK = 5,
+  topK = 8,
   mode = "baseline",
   chatId?: number | null,
   collectionId?: number | null,
