@@ -319,6 +319,7 @@ export interface ChatResponse {
   claims?: Claim[];
   sub_questions?: string[];
   loop_count?: number;
+  collection_id?: number | null;
 }
 
 export function askQuestion(
@@ -326,6 +327,7 @@ export function askQuestion(
   topK = 5,
   mode = "baseline",
   chatId?: number | null,
+  collectionId?: number | null,
 ): Promise<ChatResponse> {
   return request("/api/chat", {
     method: "POST",
@@ -334,6 +336,7 @@ export function askQuestion(
       top_k: topK,
       mode,
       chat_id: chatId ?? null,
+      collection_id: collectionId ?? null,
     }),
   });
 }

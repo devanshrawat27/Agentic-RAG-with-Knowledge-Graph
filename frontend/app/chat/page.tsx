@@ -6,9 +6,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   askQuestion,
   getChat,
+  listCollections,
   uploadDocument,
   type ChatResponse,
   type Citation,
+  type CollectionItem,
 } from "@/lib/api";
 import { AppShell } from "@/components/app/AppShell";
 import { useResizable } from "@/components/app/useResizable";
@@ -100,6 +102,8 @@ function ChatPage() {
   const [activeCitations, setActiveCitations] = useState<Citation[]>([]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [chatId, setChatId] = useState<number | null>(null);
+  const [collections, setCollections] = useState<CollectionItem[]>([]);
+  const [collectionId, setCollectionId] = useState<number | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -166,6 +170,21 @@ function ChatPage() {
     };
   }, [chatParam]);
 
+  useEffect(() => {
+    listCollections()
+      .then((rows) => {
+        setCollections(rows);
+        setCollectionId((current) =>
+          current != null && !rows.some((row) => row.id === current)
+            ? null
+            : current,
+        );
+      })
+      .catch(() => {
+        /* keep the picker empty if collections are unavailable */
+      });
+  }, []);
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     for (const file of Array.from(files)) {
@@ -201,7 +220,13 @@ function ChatPage() {
     const index = turns.length;
     setTurns((prev) => [...prev, { question: trimmed, loading: true }]);
     try {
-      const response = await askQuestion(trimmed, 5, "verified", chatId);
+      const response = await askQuestion(
+        trimmed,
+        5,
+        "verified",
+        chatId,
+        collectionId,
+      );
       setChatId(response.chat_id);
       setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response, animate: true } : t)));
       setActiveCitations(response.citations);
@@ -261,6 +286,9 @@ function ChatPage() {
                   uploading={uploading}
                   onAttachClick={() => fileInputRef.current?.click()}
                   onRemoveAttachment={removeAttachment}
+                  collections={collections}
+                  collectionId={collectionId}
+                  onCollectionChange={setCollectionId}
                 />
               ) : (
                 <div className="space-y-8 pb-40">
@@ -279,6 +307,15 @@ function ChatPage() {
               className="w-full border-t border-white/[0.06] bg-[#050505]/90 backdrop-blur-xl"
             >
               <div className="mx-auto w-full max-w-3xl px-5 py-4 sm:px-8">
+                {collections.length > 0 && (
+                  <div className="mb-2 flex items-center justify-end">
+                    <CollectionPicker
+                      collections={collections}
+                      value={collectionId}
+                      onChange={setCollectionId}
+                    />
+                  </div>
+                )}
                 {attachments.length > 0 && (
                   <AttachmentChips
                     attachments={attachments}
@@ -409,6 +446,56 @@ function AttachmentChips({
   );
 }
 
+function CollectionPicker({
+  collections,
+  value,
+  onChange,
+}: {
+  collections: CollectionItem[];
+  value: number | null;
+  onChange: (id: number | null) => void;
+}) {
+  if (collections.length === 0) return null;
+
+  return (
+    <label className="inline-flex items-center gap-2 text-[11.5px] text-white/40">
+      <svg
+        className="h-3.5 w-3.5 text-white/30"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </svg>
+      <span className="uppercase tracking-wider text-white/30">Scope</span>
+      <select
+        value={value ?? ""}
+        onChange={(event) =>
+          onChange(event.target.value ? Number(event.target.value) : null)
+        }
+        className="max-w-[220px] rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/80 outline-none transition hover:border-white/[0.16] focus:border-cyan-400/40"
+      >
+        <option value="" className="bg-[#0a0b0e]">
+          All documents
+        </option>
+        {collections.map((collection) => (
+          <option
+            key={collection.id}
+            value={collection.id}
+            disabled={collection.document_count === 0}
+            className="bg-[#0a0b0e]"
+          >
+            {collection.name} ({collection.document_count})
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function HeroInput({
   question,
   setQuestion,
@@ -418,6 +505,9 @@ function HeroInput({
   uploading,
   onAttachClick,
   onRemoveAttachment,
+  collections,
+  collectionId,
+  onCollectionChange,
 }: {
   question: string;
   setQuestion: (v: string) => void;
@@ -427,6 +517,9 @@ function HeroInput({
   uploading: boolean;
   onAttachClick: () => void;
   onRemoveAttachment: (name: string) => void;
+  collections: CollectionItem[];
+  collectionId: number | null;
+  onCollectionChange: (id: number | null) => void;
 }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
@@ -451,6 +544,15 @@ function HeroInput({
         transition={{ duration: 0.6, delay: 0.15 }}
         className="mt-8 w-full max-w-2xl"
       >
+        {collections.length > 0 && (
+          <div className="mb-3 flex justify-center">
+            <CollectionPicker
+              collections={collections}
+              value={collectionId}
+              onChange={onCollectionChange}
+            />
+          </div>
+        )}
         <div className="group relative flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-2 backdrop-blur-xl transition focus-within:border-white/[0.22] focus-within:shadow-[0_0_40px_-10px_rgba(56,189,248,0.4)]">
           <button
             type="button"
