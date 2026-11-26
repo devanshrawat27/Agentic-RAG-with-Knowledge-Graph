@@ -71,6 +71,30 @@ def test_chat_skips_cooling_key_on_next_call(monkeypatch):
     assert _FakeGeminiChat.calls == ["good"]
 
 
+def test_chat_rotates_on_transient_503(monkeypatch):
+    class _BusyFirst(_FakeGeminiChat):
+        def invoke(self, messages, **kwargs):
+            if self.key == "busy":
+                raise RuntimeError("503 UNAVAILABLE high demand")
+            return AIMessage(content="ok")
+
+    _FakeGeminiChat.calls = []
+    monkeypatch.setattr(
+        "langchain_google_genai.ChatGoogleGenerativeAI", _BusyFirst
+    )
+
+    chat = RotatingGeminiChat(
+        model_name="fake",
+        temperature=0.0,
+        keys=["busy", "good"],
+        cooldown_seconds=60,
+    )
+    result = chat.invoke([HumanMessage(content="hi")])
+
+    assert result.content == "ok"
+    assert _FakeGeminiChat.calls == ["busy", "good"]
+
+
 def test_chat_raises_when_all_keys_are_quota_limited(monkeypatch):
     class _AlwaysQuota(_FakeGeminiChat):
         def invoke(self, messages, **kwargs):

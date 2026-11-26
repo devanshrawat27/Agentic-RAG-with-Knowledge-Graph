@@ -16,7 +16,7 @@ from langchain_core.outputs import ChatGeneration, ChatResult
 from pydantic import PrivateAttr
 
 from app.core.config import get_settings
-from app.core.keypool import ApiKeyPool, is_quota_error
+from app.core.keypool import ApiKeyPool, cooldown_for, should_rotate
 
 
 class RotatingGeminiChat(BaseChatModel):
@@ -70,9 +70,9 @@ class RotatingGeminiChat(BaseChatModel):
                     generations=[ChatGeneration(message=response)]
                 )
             except Exception as exc:  # noqa: BLE001 - inspect quota errors
-                if not is_quota_error(exc):
+                if not should_rotate(exc):
                     raise
-                self._pool.mark_failed(key)
+                self._pool.mark_failed(key, seconds=cooldown_for(exc))
                 last_error = exc
 
         if last_error is not None:

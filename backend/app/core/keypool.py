@@ -44,13 +44,55 @@ def parse_api_keys(raw: str, fallback: str = "") -> list[str]:
 
 
 def is_quota_error(exc: Exception) -> bool:
-    message = str(exc)
-    return (
-        "429" in message
-        or "RESOURCE_EXHAUSTED" in message
-        or "quota" in message.lower()
-        or "rate limit" in message.lower()
+    """True for quota errors and unusable-key errors (both should rotate)."""
+    message = str(exc).lower()
+    markers = (
+        "429",
+        "resource_exhausted",
+        "quota",
+        "rate limit",
+        "api key not valid",
+        "api_key_invalid",
+        "invalid api key",
+        "api key expired",
+        "permission_denied",
+        "unauthenticated",
+        "401",
+        "403",
     )
+    return any(marker in message for marker in markers)
+
+
+def is_transient_error(exc: Exception) -> bool:
+    """Provider hiccups that are worth retrying on another key."""
+    message = str(exc).lower()
+    markers = (
+        "503",
+        "500",
+        "502",
+        "504",
+        "unavailable",
+        "high demand",
+        "temporarily",
+        "timeout",
+        "timed out",
+        "deadline exceeded",
+        "connection reset",
+        "overloaded",
+    )
+    return any(marker in message for marker in markers)
+
+
+def should_rotate(exc: Exception) -> bool:
+    return is_quota_error(exc) or is_transient_error(exc)
+
+
+def cooldown_for(exc: Exception) -> float | None:
+    """Transient provider errors get a short rest; bad keys get the full one."""
+    if is_transient_error(exc) and not is_quota_error(exc):
+        return 5.0
+    return None
+
 
 
 class ApiKeyPool:

@@ -12,7 +12,11 @@ from functools import lru_cache
 from langchain_core.embeddings import Embeddings
 
 from app.core.config import get_settings
-from app.core.keypool import ApiKeyPool, is_quota_error
+from app.core.keypool import (
+    ApiKeyPool,
+    cooldown_for,
+    should_rotate,
+)
 
 logger = logging.getLogger("app.core.embeddings")
 
@@ -50,9 +54,9 @@ class RotatingGeminiEmbeddings(Embeddings):
                 self._pool.mark_ok(key)
                 return result
             except Exception as exc:  # noqa: BLE001 - inspect quota errors
-                if not is_quota_error(exc):
+                if not should_rotate(exc):
                     raise
-                self._pool.mark_failed(key)
+                self._pool.mark_failed(key, seconds=cooldown_for(exc))
                 last_error = exc
 
         if last_error is not None:
@@ -122,11 +126,11 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
                 out.extend(emb.embed_documents(batch))
                 break
             except Exception as exc:  # noqa: BLE001
-                if not is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
+                if not should_rotate(exc) or attempt == _MAX_RETRIES - 1:
                     raise
                 wait = min(60, 5 * (2**attempt))
                 logger.warning(
-                    "embedding quota hit (batch %d), retrying in %ds",
+                    "embedding provider error (batch %d), retrying in %ds",
                     start // _EMBED_BATCH,
                     wait,
                 )
@@ -143,7 +147,7 @@ def embed_query(text: str) -> list[float]:
         try:
             return emb.embed_query(text)
         except Exception as exc:  # noqa: BLE001
-            if not is_quota_error(exc) or attempt == _MAX_RETRIES - 1:
+            if not should_rotate(exc) or attempt == _MAX_RETRIES - 1:
                 raise
             time.sleep(min(30, 4 * (2**attempt)))
     return emb.embed_query(text)  # unreachable, satisfies type checkers
