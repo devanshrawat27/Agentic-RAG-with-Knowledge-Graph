@@ -40,12 +40,19 @@ _CAPITALIZED = re.compile(
 )
 
 
-def retrieve_vector(user_id: int, query: str, top_k: int = 5) -> list[dict]:
+def retrieve_vector(
+    user_id: int,
+    query: str,
+    top_k: int = 8,
+    doc_ids: list[str] | None = None,
+) -> list[dict]:
     """Return the top-k relevant chunks for a user, scoped to them only."""
     if not query.strip():
         return []
+    if doc_ids is not None and not doc_ids:
+        return []
     vector = embed_query(query)
-    return search_chunks(user_id, vector, limit=top_k)
+    return search_chunks(user_id, vector, limit=top_k, doc_ids=doc_ids)
 
 
 def format_evidence(evidence: list[dict]) -> str:
@@ -156,17 +163,24 @@ def merge_rank(
 def retrieve_hybrid(
     user_id: int,
     queries: list[str],
-    top_k: int = 5,
+    top_k: int = 8,
+    doc_ids: list[str] | None = None,
 ) -> list[dict]:
     """Vector + graph retrieval for one or more sub-questions."""
     clean_queries = [q.strip() for q in queries if q and q.strip()]
     if not clean_queries:
         return []
+    if doc_ids is not None and not doc_ids:
+        return []
 
     vector_items: list[dict] = []
     for query in clean_queries:
         try:
-            vector_items.extend(retrieve_vector(user_id, query, top_k=top_k))
+            vector_items.extend(
+                retrieve_vector(
+                    user_id, query, top_k=top_k, doc_ids=doc_ids
+                )
+            )
         except Exception as exc:  # noqa: BLE001 - degrade instead of failing
             logger.warning("vector search failed: %s", str(exc)[:200])
 
@@ -177,6 +191,8 @@ def retrieve_hybrid(
     ]
 
     terms = extract_terms(" ".join(clean_queries))
-    graph_items = search_graph(user_id, terms, limit=top_k * 2)
+    graph_items = search_graph(
+        user_id, terms, limit=top_k * 2, doc_ids=doc_ids
+    )
 
     return merge_rank(vector_items, graph_items, limit=top_k)

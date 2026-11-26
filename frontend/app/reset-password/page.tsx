@@ -18,7 +18,7 @@ function passwordScore(p: string): { score: 0 | 1 | 2 | 3 | 4; label: string; co
   if (/[^A-Za-z0-9]/.test(p)) score++;
   if (score <= 1) return { score: score as 0 | 1, label: "Weak", color: "#ef4444" };
   if (score === 2) return { score: 2, label: "Fair", color: "#f59e0b" };
-  if (score === 3) return { score: 3, label: "Good", color: "#38bdf8" };
+  if (score === 3) return { score: 3, label: "Good", color: "#e5e7eb" };
   return { score: 4, label: "Strong", color: "#34d399" };
 }
 
@@ -193,7 +193,7 @@ function ResetForm() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="pt-1 text-center text-[13px] text-white/45"
         >
-          <Link href="/login" className="font-medium text-white transition hover:text-cyan-200">
+          <Link href="/login" className="font-medium text-white transition hover:text-white/90">
             Back to sign in
           </Link>
         </motion.p>

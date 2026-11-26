@@ -1,4 +1,4 @@
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export interface HealthResponse {
@@ -6,6 +6,7 @@ export interface HealthResponse {
   service: string;
   version: string;
   llm_configured: boolean;
+  llm_key_count?: number;
   embedding_provider: string;
 }
 
@@ -60,6 +61,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(detail);
   }
+  if (res.status === 204) {
+    return undefined as T;
+  }
   return res.json() as Promise<T>;
 }
 
@@ -93,6 +97,26 @@ export function getMe(): Promise<UserPublic> {
   return request("/api/auth/me");
 }
 
+export function updateProfile(name: string): Promise<UserPublic> {
+  return request("/api/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify({ name }),
+  });
+}
+
+export function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  return request("/api/auth/change-password", {
+    method: "POST",
+    body: JSON.stringify({
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+  });
+}
+
 export function verifyEmail(token: string): Promise<{ message: string }> {
   return request("/api/auth/verify-email", {
     method: "POST",
@@ -119,12 +143,43 @@ export function resetPassword(
 
 export interface DocumentItem {
   id: number;
+  doc_id?: string | null;
   filename: string;
   status: string;
   chunk_count: number;
   entity_count: number;
   relationship_count: number;
+  has_file?: boolean;
+  mime_type?: string | null;
   created_at: string | null;
+}
+
+export interface DocumentMeta {
+  id: number;
+  doc_id: string;
+  filename: string;
+  status: string;
+  chunk_count: number;
+  entity_count: number;
+  relationship_count: number;
+  has_file: boolean;
+  mime_type: string | null;
+  file_size: number | null;
+  created_at: string | null;
+}
+
+export function getDocumentMeta(docId: string): Promise<DocumentMeta> {
+  return request(`/api/documents/by-doc/${encodeURIComponent(docId)}`);
+}
+
+export function getDocumentChunks(
+  docId: string,
+): Promise<{ doc_id: string; chunks: SourceChunk[] }> {
+  return request(`/api/documents/by-doc/${encodeURIComponent(docId)}/chunks`);
+}
+
+export function documentFileUrl(docId: string): string {
+  return `${API_BASE_URL}/api/documents/by-doc/${encodeURIComponent(docId)}/file`;
 }
 
 export interface UploadResult {
@@ -160,6 +215,80 @@ export async function uploadDocument(file: File): Promise<UploadResult> {
 
 export function listDocuments(): Promise<{ documents: DocumentItem[] }> {
   return request("/api/documents");
+}
+
+export interface CollectionItem {
+  id: number;
+  name: string;
+  description: string;
+  document_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollectionDocument {
+  id: number;
+  filename: string;
+  status: string;
+  chunk_count: number;
+  entity_count: number;
+  relationship_count: number;
+  created_at: string | null;
+}
+
+export interface CollectionDetail extends CollectionItem {
+  documents: CollectionDocument[];
+}
+
+export function listCollections(): Promise<CollectionItem[]> {
+  return request("/api/collections");
+}
+
+export function createCollection(
+  name: string,
+  description = "",
+): Promise<CollectionItem> {
+  return request("/api/collections", {
+    method: "POST",
+    body: JSON.stringify({ name, description }),
+  });
+}
+
+export function updateCollection(
+  collectionId: number,
+  data: { name?: string; description?: string },
+): Promise<CollectionItem> {
+  return request(`/api/collections/${collectionId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteCollection(collectionId: number): Promise<void> {
+  return request(`/api/collections/${collectionId}`, { method: "DELETE" });
+}
+
+export function getCollection(collectionId: number): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}`);
+}
+
+export function addCollectionDocument(
+  collectionId: number,
+  documentId: number,
+): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}/documents`, {
+    method: "POST",
+    body: JSON.stringify({ document_id: documentId }),
+  });
+}
+
+export function removeCollectionDocument(
+  collectionId: number,
+  documentId: number,
+): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}/documents/${documentId}`, {
+    method: "DELETE",
+  });
 }
 
 export interface GraphNode {
@@ -214,6 +343,26 @@ export interface Claim {
   reason: string;
 }
 
+export interface SourceChunk {
+  chunk_id: string;
+  chunk_index: number;
+  doc_id: string | null;
+  filename: string | null;
+  text: string;
+  is_focus: boolean;
+}
+
+export interface SourceChunkContext {
+  focus: string;
+  chunks: SourceChunk[];
+}
+
+export function getChunkContext(
+  chunkId: string,
+): Promise<SourceChunkContext> {
+  return request(`/api/chunks/${encodeURIComponent(chunkId)}`);
+}
+
 export interface ChatResponse {
   answer: string;
   citations: Citation[];
@@ -222,13 +371,15 @@ export interface ChatResponse {
   claims?: Claim[];
   sub_questions?: string[];
   loop_count?: number;
+  collection_id?: number | null;
 }
 
 export function askQuestion(
   question: string,
-  topK = 5,
+  topK = 8,
   mode = "baseline",
   chatId?: number | null,
+  collectionId?: number | null,
 ): Promise<ChatResponse> {
   return request("/api/chat", {
     method: "POST",
@@ -237,6 +388,7 @@ export function askQuestion(
       top_k: topK,
       mode,
       chat_id: chatId ?? null,
+      collection_id: collectionId ?? null,
     }),
   });
 }

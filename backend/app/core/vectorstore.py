@@ -7,7 +7,15 @@ similarity search can ever cross user boundaries (see docs/DATA_MODEL.md).
 from functools import lru_cache
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import (
+    Distance,
+    FieldCondition,
+    Filter,
+    MatchAny,
+    MatchValue,
+    PointStruct,
+    VectorParams,
+)
 
 from app.core.config import get_settings
 from app.core.embeddings import get_embedding_dim
@@ -71,17 +79,42 @@ def upsert_chunks(
     return len(points)
 
 
-def search_chunks(user_id: int, query_vector: list[float], limit: int = 5) -> list[dict]:
-    """Search only the user's collection. Returns text + provenance payloads."""
+def search_chunks(
+    user_id: int,
+    query_vector: list[float],
+    limit: int = 5,
+    doc_ids: list[str] | None = None,
+) -> list[dict]:
+    """Search only the user's collection. Returns text + provenance payloads.
+
+    When `doc_ids` is provided, the search is restricted to those documents
+    (used for collection-scoped chat). An empty list means "nothing in scope".
+    """
+    if doc_ids is not None and not doc_ids:
+        return []
+
     client = get_qdrant()
     name = collection_name(user_id)
     if not client.collection_exists(name):
         return []
+
+    query_filter = None
+    if doc_ids is not None:
+        query_filter = Filter(
+            must=[
+                FieldCondition(
+                    key="doc_id",
+                    match=MatchAny(any=list(doc_ids)),
+                )
+            ]
+        )
+
     result = client.query_points(
         collection_name=name,
         query=query_vector,
         limit=limit,
         with_payload=True,
+        query_filter=query_filter,
     )
     return [
         {
@@ -94,6 +127,102 @@ def search_chunks(user_id: int, query_vector: list[float], limit: int = 5) -> li
         }
         for hit in result.points
     ]
+
+
+def get_chunk_context(
+    user_id: int, chunk_id: str, context: int = 1
+) -> list[dict]:
+    """Return a chunk plus its neighbours, scoped to the user's collection."""
+    if ":" not in chunk_id:
+        return []
+    doc_id, _, raw_index = chunk_id.rpartition(":")
+    try:
+        index = int(raw_index)
+    except ValueError:
+        return []
+    if index < 0:
+        return []
+
+    client = get_qdrant()
+    name = collection_name(user_id)
+    if not client.collection_exists(name):
+        return []
+
+    start = max(0, index - context)
+    ids = [_point_id(doc_id, i) for i in range(start, index + context + 1)]
+    points = client.retrieve(collection_name=name, ids=ids, with_payload=True)
+
+    chunks: list[dict] = []
+    for point in points:
+        payload = point.payload or {}
+        payload_chunk_id = payload.get("chunk_id")
+        if not payload_chunk_id:
+            continue
+        try:
+            chunk_index = int(payload.get("chunk_index"))
+        except (TypeError, ValueError):
+            continue
+        chunks.append(
+            {
+                "chunk_id": payload_chunk_id,
+                "chunk_index": chunk_index,
+                "doc_id": payload.get("doc_id"),
+                "filename": payload.get("filename"),
+                "text": payload.get("text") or "",
+                "is_focus": payload_chunk_id == chunk_id,
+            }
+        )
+
+    chunks.sort(key=lambda item: item["chunk_index"])
+    if not any(chunk["is_focus"] for chunk in chunks):
+        return []
+    return chunks
+
+
+def get_document_chunks(user_id: int, doc_id: str) -> list[dict]:
+    """Return every stored chunk for one document, ordered by chunk index."""
+    client = get_qdrant()
+    name = collection_name(user_id)
+    if not client.collection_exists(name):
+        return []
+
+    scroll_filter = Filter(
+        must=[FieldCondition(key="doc_id", match=MatchValue(value=doc_id))]
+    )
+    chunks: list[dict] = []
+    offset = None
+    while True:
+        points, offset = client.scroll(
+            collection_name=name,
+            scroll_filter=scroll_filter,
+            limit=200,
+            offset=offset,
+            with_payload=True,
+        )
+        for point in points:
+            payload = point.payload or {}
+            chunk_id = payload.get("chunk_id")
+            if not chunk_id:
+                continue
+            try:
+                chunk_index = int(payload.get("chunk_index"))
+            except (TypeError, ValueError):
+                continue
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "chunk_index": chunk_index,
+                    "doc_id": payload.get("doc_id"),
+                    "filename": payload.get("filename"),
+                    "text": payload.get("text") or "",
+                    "is_focus": False,
+                }
+            )
+        if offset is None:
+            break
+
+    chunks.sort(key=lambda item: item["chunk_index"])
+    return chunks
 
 
 def delete_document(user_id: int, doc_id: str) -> None:

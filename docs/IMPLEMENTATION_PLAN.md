@@ -128,7 +128,9 @@ around the pipeline. This is where visual design decisions are made and applied.
        `CitationList`, `AgentStatus`
 - [ ] E2. Chat history sidebar (per-user); open/continue chats (multi-turn context)
 - [x] E3. `GET /api/graph` + Graph visualization (`/graph`) via react-force-graph
-- [ ] E4. Source/citation viewer (open source chunk from a citation)
+- [x] E4. Source/citation viewer (open source chunk from a citation)
+- [x] E5. Collection-scoped chat: retrieval filtered by the collection's
+       documents (Qdrant + Neo4j) with a scope picker in the chat UI
 
 Checkpoint E: ChatGPT-style experience — chat, history, citations, graph trace.
 

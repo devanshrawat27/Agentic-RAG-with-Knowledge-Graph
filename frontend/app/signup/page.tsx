@@ -17,7 +17,7 @@ function passwordScore(p: string): { score: 0 | 1 | 2 | 3 | 4; label: string; co
   if (/[^A-Za-z0-9]/.test(p)) score++;
   if (score <= 1) return { score: score as 0 | 1, label: "Weak", color: "#ef4444" };
   if (score === 2) return { score: 2, label: "Fair", color: "#f59e0b" };
-  if (score === 3) return { score: 3, label: "Good", color: "#38bdf8" };
+  if (score === 3) return { score: 3, label: "Good", color: "#e5e7eb" };
   return { score: 4, label: "Strong", color: "#34d399" };
 }
 
@@ -71,7 +71,7 @@ export default function SignupPage() {
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1, type: "spring", stiffness: 200 }}
-            className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 via-cyan-900/30 to-black text-cyan-300 shadow-[0_0_30px_rgba(6,182,212,0.35)]"
+            className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 via-slate-800/40 to-black text-white/75 shadow-[0_0_30px_rgba(255,255,255,0.10)]"
           >
             <svg viewBox="0 0 24 24" fill="none" className="h-8 w-8">
               <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.6" />
@@ -84,7 +84,7 @@ export default function SignupPage() {
           </p>
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-cyan-300 transition hover:text-cyan-200"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/75 transition hover:text-white/90"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -267,7 +267,7 @@ export default function SignupPage() {
           className="pt-1 text-center text-[13px] text-white/45"
         >
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-white transition hover:text-cyan-200">
+          <Link href="/login" className="font-medium text-white transition hover:text-white/90">
             Sign in
           </Link>
         </motion.p>

@@ -10,10 +10,12 @@ router = APIRouter()
 @router.get("/health")
 def health() -> dict:
     settings = get_settings()
+    keys = settings.all_gemini_api_keys
     return {
         "status": "ok",
         "service": "agentic-rag-backend",
         "version": "0.1.0",
-        "llm_configured": bool(settings.gemini_api_key),
+        "llm_configured": bool(keys),
+        "llm_key_count": len(keys),
         "embedding_provider": settings.embedding_provider,
     }

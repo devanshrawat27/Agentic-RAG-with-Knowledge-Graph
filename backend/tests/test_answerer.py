@@ -149,7 +149,7 @@ def test_pipeline_returns_verified_answer(monkeypatch):
     )
     monkeypatch.setattr(
         "app.agents.retriever.retrieve_hybrid",
-        lambda user_id, queries, top_k=5: [dict(EVIDENCE[0])],
+        lambda user_id, queries, top_k=5, doc_ids=None: [dict(EVIDENCE[0])],
     )
 
     state = run_pipeline("Who breached 4.2?", user_id=1)

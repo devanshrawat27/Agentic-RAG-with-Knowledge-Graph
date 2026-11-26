@@ -147,6 +147,38 @@ def test_lexical_fallback_marks_unrelated_claim_unsupported(monkeypatch):
     assert out["needs_more_evidence"] is True
 
 
+def test_supported_claim_without_refs_is_grounded(monkeypatch):
+    llm = _LLM(
+        [
+            "Acme Corp breached clause 4.2 in 2024.",
+            '[{"claim": 1, "supported": true, "evidence": [], "reason": "ok"}]',
+        ]
+    )
+    _install(monkeypatch, llm)
+
+    out = verifier.verify({"question": "q?", "evidence": EVIDENCE})
+
+    assert out["claims"][0]["supported"] is True
+    assert out["claims"][0]["evidence_refs"] == [1]
+    assert out["needs_more_evidence"] is False
+
+
+def test_supported_claim_without_refs_is_downgraded(monkeypatch):
+    llm = _LLM(
+        [
+            "Beta violated clause 7.1.",
+            '[{"claim": 1, "supported": true, "evidence": [], "reason": "ok"}]',
+        ]
+    )
+    _install(monkeypatch, llm)
+
+    out = verifier.verify({"question": "q?", "evidence": EVIDENCE})
+
+    assert out["claims"][0]["supported"] is False
+    assert out["claims"][0]["reason"] == "no evidence reference"
+    assert out["needs_more_evidence"] is True
+
+
 def test_parse_verification_dict_and_filters_bad_refs():
     raw = (
         '```json\n{"results": [{"claim": 1, "supported": "true", '
@@ -211,7 +243,7 @@ def test_pipeline_stops_at_max_loops(monkeypatch):
     _install(monkeypatch, llm)
     monkeypatch.setattr(
         "app.agents.retriever.retrieve_hybrid",
-        lambda user_id, queries, top_k=5: [dict(EVIDENCE[0])],
+        lambda user_id, queries, top_k=5, doc_ids=None: [dict(EVIDENCE[0])],
     )
 
     state = run_pipeline("Who breached 4.2?", user_id=1)

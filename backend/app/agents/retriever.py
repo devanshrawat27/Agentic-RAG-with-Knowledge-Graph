@@ -15,10 +15,15 @@ def retrieve(state: AgentState) -> AgentState:
         return {"evidence": [], "needs_more_evidence": False}
 
     queries = state.get("sub_questions") or [question]
-    top_k = state.get("top_k") or 5
+    top_k = state.get("top_k") or 8
 
     try:
-        evidence = retrieve_hybrid(user_id, queries, top_k=top_k)
+        evidence = retrieve_hybrid(
+            user_id,
+            queries,
+            top_k=top_k,
+            doc_ids=state.get("doc_ids"),
+        )
     except Exception as exc:  # noqa: BLE001 - never break the agent chain
         logger.warning("hybrid retrieval failed: %s", str(exc)[:200])
         evidence = []

@@ -22,7 +22,7 @@ def test_retriever_requires_question(monkeypatch):
 def test_retriever_uses_sub_questions_and_top_k(monkeypatch):
     call = {}
 
-    def fake_hybrid(user_id, queries, top_k=5):
+    def fake_hybrid(user_id, queries, top_k=5, doc_ids=None):
         call.update(user_id=user_id, queries=queries, top_k=top_k)
         return [{"text": "chunk", "chunk_id": "c1"}]
 
@@ -42,10 +42,24 @@ def test_retriever_uses_sub_questions_and_top_k(monkeypatch):
     assert state["needs_more_evidence"] is False
 
 
+def test_retriever_passes_collection_scope(monkeypatch):
+    captured = {}
+
+    def fake_hybrid(user_id, queries, top_k=5, doc_ids=None):
+        captured["doc_ids"] = doc_ids
+        return []
+
+    monkeypatch.setattr("app.agents.retriever.retrieve_hybrid", fake_hybrid)
+
+    retrieve({"question": "q?", "user_id": 1, "doc_ids": ["d1"]})
+
+    assert captured["doc_ids"] == ["d1"]
+
+
 def test_retriever_counts_verifier_requested_loops(monkeypatch):
     monkeypatch.setattr(
         "app.agents.retriever.retrieve_hybrid",
-        lambda user_id, queries, top_k=5: [],
+        lambda user_id, queries, top_k=5, doc_ids=None: [],
     )
 
     state = retrieve(

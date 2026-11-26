@@ -19,7 +19,7 @@ export const cardClass =
 export const bannerClass = "rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600";
 
 export const authInputClass =
-  "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none transition focus:border-white/[0.22] focus:bg-white/[0.05] focus:shadow-[0_0_0_4px_rgba(56,189,248,0.08)]";
+  "w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none transition focus:border-white/[0.22] focus:bg-white/[0.05] focus:shadow-[0_0_0_4px_rgba(255,255,255,0.06)]";
 
 export const authInvalidInputClass =
   "w-full rounded-xl border border-red-500/50 bg-red-500/[0.04] px-4 py-3 text-[14px] text-white placeholder:text-white/30 outline-none transition focus:border-red-500/70 focus:shadow-[0_0_0_4px_rgba(239,68,68,0.08)]";

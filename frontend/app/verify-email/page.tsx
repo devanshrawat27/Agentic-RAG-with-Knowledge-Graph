@@ -68,7 +68,7 @@ function VerifyInner() {
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 via-cyan-900/30 to-black text-cyan-300 shadow-[0_0_30px_rgba(6,182,212,0.35)]"
+            className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-white/20 bg-gradient-to-br from-white/10 via-slate-800/40 to-black text-white/75 shadow-[0_0_30px_rgba(255,255,255,0.10)]"
           >
             <svg className="h-8 w-8 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.2" opacity="0.25" />
@@ -140,7 +140,7 @@ function VerifyInner() {
           ) : (
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-cyan-300 transition hover:text-cyan-200"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/75 transition hover:text-white/90"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

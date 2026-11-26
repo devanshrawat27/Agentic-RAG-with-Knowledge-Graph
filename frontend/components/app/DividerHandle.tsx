@@ -22,13 +22,13 @@ export function DividerHandle({
       aria-orientation={isH ? "vertical" : "horizontal"}
       className={`group relative z-20 flex flex-shrink-0 items-center justify-center transition-colors ${
         isH
-          ? "w-1.5 cursor-col-resize hover:bg-cyan-400/20"
-          : "h-1.5 cursor-row-resize hover:bg-cyan-400/20"
+          ? "w-1.5 cursor-col-resize hover:bg-white/10"
+          : "h-1.5 cursor-row-resize hover:bg-white/10"
       } ${className}`}
     >
       {/* Visible bar */}
       <div
-        className={`rounded-full bg-white/[0.06] transition-all group-hover:bg-cyan-400/50 ${
+        className={`rounded-full bg-white/[0.06] transition-all group-hover:bg-white/40 ${
           isH ? "h-12 w-0.5" : "h-0.5 w-12"
         }`}
       />

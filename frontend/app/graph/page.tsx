@@ -147,7 +147,7 @@ export default function GraphPage() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search nodes…"
-              className="h-9 w-52 rounded-lg border border-white/[0.08] bg-white/[0.03] pl-9 pr-3 text-[12.5px] text-white/85 outline-none transition placeholder:text-white/30 focus:border-cyan-400/40"
+              className="h-9 w-52 rounded-lg border border-white/[0.08] bg-white/[0.03] pl-9 pr-3 text-[12.5px] text-white/85 outline-none transition placeholder:text-white/30 focus:border-white/20"
             />
           </div>
 
@@ -155,7 +155,7 @@ export default function GraphPage() {
             onClick={() => setIncludeMentions((value) => !value)}
             className={`h-9 rounded-lg border px-3 text-[12px] font-medium transition ${
               includeMentions
-                ? "border-cyan-400/40 bg-cyan-500/[0.08] text-cyan-200"
+                ? "border-white/20 bg-white/[0.06] text-white/90"
                 : "border-white/[0.08] bg-white/[0.03] text-white/50 hover:text-white/80"
             }`}
             title="Show provenance MENTIONS edges"
@@ -228,7 +228,7 @@ export default function GraphPage() {
 
             {loading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <span className="h-7 w-7 animate-spin rounded-full border-2 border-white/15 border-t-cyan-400" />
+                <span className="h-7 w-7 animate-spin rounded-full border-2 border-white/15 border-t-white/70" />
                 <p className="text-[13px] text-white/45">Loading graph…</p>
               </div>
             )}
@@ -250,7 +250,7 @@ export default function GraphPage() {
             {!loading && !error && nodes.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center px-6">
                 <div className="max-w-md rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-violet-400/30 bg-violet-500/10 text-violet-300">
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-white/15 bg-white/[0.05] text-white/60">
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
@@ -381,7 +381,7 @@ export default function GraphPage() {
                             onClick={() => setSelected(node)}
                             className="w-full rounded-lg border border-white/[0.05] bg-white/[0.02] px-2.5 py-2 text-left transition hover:border-white/[0.12] hover:bg-white/[0.04]"
                           >
-                            <p className="text-[10px] font-mono uppercase tracking-wider text-cyan-300/70">
+                            <p className="text-[10px] font-mono uppercase tracking-wider text-white/60">
                               {outgoing ? "→" : "←"} {edge.type}
                             </p>
                             <p className="mt-0.5 flex items-center gap-1.5 text-[12.5px] text-white/80">

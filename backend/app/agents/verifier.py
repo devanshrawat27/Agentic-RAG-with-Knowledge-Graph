@@ -332,6 +332,19 @@ def verify(state: AgentState) -> AgentState:
         for text, verdict in zip(claim_texts, verdicts)
     ]
 
+    # A supported claim must point at evidence. Some models mark a claim
+    # supported but omit the evidence indices; ground it lexically, or
+    # downgrade it rather than showing an uncited sentence.
+    for claim in claims:
+        if claim["supported"] and not claim["evidence_refs"]:
+            fallback = _lexical_check([claim["text"]], evidence)[0]
+            if fallback["supported"] and fallback["evidence_refs"]:
+                claim["evidence_refs"] = fallback["evidence_refs"]
+                claim["reason"] = claim["reason"] or fallback["reason"]
+            else:
+                claim["supported"] = False
+                claim["reason"] = "no evidence reference"
+
     unsupported = [claim for claim in claims if not claim["supported"]]
     if not unsupported:
         return {

@@ -89,7 +89,7 @@ export function AuthShell({
             y: [0, -60, 40, 0],
           }}
           transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -left-32 top-1/4 h-[520px] w-[520px] rounded-full bg-cyan-500/[0.08] blur-3xl"
+          className="absolute -left-32 top-1/4 h-[520px] w-[520px] rounded-full bg-white/[0.06] blur-3xl"
         />
         <motion.div
           animate={{
@@ -97,7 +97,7 @@ export function AuthShell({
             y: [0, 50, -30, 0],
           }}
           transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -right-40 top-1/3 h-[600px] w-[600px] rounded-full bg-blue-500/[0.07] blur-3xl"
+          className="absolute -right-40 top-1/3 h-[600px] w-[600px] rounded-full bg-white/[0.03] blur-3xl"
         />
         <motion.div
           animate={{
@@ -153,7 +153,7 @@ export function AuthShell({
               alt="TrueDocs"
               width={44}
               height={44}
-              className="h-11 w-11 object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.4)]"
+              className="h-11 w-11 object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.12)]"
               priority
             />
             <span className="text-[22px] font-semibold tracking-tight">TrueDocs</span>
@@ -167,7 +167,7 @@ export function AuthShell({
               transition={{ duration: 0.6, delay: 0.2 }}
               className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-3.5 py-1.5 text-[11.5px] font-medium text-white/80 backdrop-blur-xl shadow-[0_2px_12px_rgba(0,0,0,0.4)]"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_#38bdf8]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-white/70 shadow-[0_0_10px_#e5e7eb]" />
               {badge}
             </motion.div>
 
@@ -208,7 +208,7 @@ export function AuthShell({
                     transition={{ duration: 0.5, delay: 0.55 + i * 0.08 }}
                     className="group flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-2.5 backdrop-blur-md transition-all hover:border-white/[0.14] hover:bg-white/[0.04]"
                   >
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] bg-gradient-to-br from-white/[0.07] to-black/40 text-cyan-300/90 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.1] bg-gradient-to-br from-white/[0.07] to-black/40 text-white/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
                       {f.icon}
                     </div>
                     <div>
@@ -242,7 +242,7 @@ export function AuthShell({
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="relative w-full max-w-[440px]"
           >
-            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-cyan-500/10 via-blue-500/5 to-transparent blur-3xl" />
+            <div className="pointer-events-none absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-white/[0.06] via-white/[0.03] to-transparent blur-3xl" />
 
             <div className="relative overflow-hidden rounded-2xl border border-white/[0.1] bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-white/[0.01] p-6 sm:p-8 backdrop-blur-2xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.18)]">
               <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />

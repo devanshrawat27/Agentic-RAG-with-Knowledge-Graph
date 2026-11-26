@@ -17,7 +17,9 @@ it must not run.
 | `tokens` | `id` PK, `user_id` FK→users, `type` (verify/reset), `token_hash`, `expires_at`, `used_at` NULL | one-time email tokens |
 | `chats` | `id` PK, `user_id` FK→users, `title`, `created_at`, `updated_at` | one chat = one conversation |
 | `messages` | `id` PK, `chat_id` FK→chats, `role` (user/assistant), `content`, `created_at` | turns within a chat |
-| `documents` | `id` PK, `user_id` FK→users, `filename`, `status`, `chunk_count`, `created_at` | uploaded docs |
+| `documents` | `id` PK, `user_id` FK→users, `doc_id`, `filename`, `status`, `chunk_count`, `file_path`, `mime_type`, `file_size`, `created_at` | uploaded docs |
+| `collections` | `id` PK, `user_id` FK→users, `name`, `description`, `created_at`, `updated_at` | named document groups (per user, unique name) |
+| `collection_documents` | `collection_id` FK→collections, `document_id` FK→documents, `added_at` | many-to-many membership; both sides cascade |
 
 Cascade: deleting a user removes their chats, messages, documents, tokens.
 

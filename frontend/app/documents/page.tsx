@@ -118,7 +118,7 @@ export default function DocumentsPage() {
           onDrop={(e) => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }}
           className={`mt-7 flex flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition-all ${
             dragging
-              ? "border-cyan-400/60 bg-cyan-500/[0.06]"
+              ? "border-white/30 bg-white/[0.05]"
               : "border-white/[0.12] bg-white/[0.02] hover:border-white/[0.2] hover:bg-white/[0.03]"
           }`}
         >
@@ -131,7 +131,7 @@ export default function DocumentsPage() {
           />
           <motion.div
             animate={dragging ? { scale: 1.08 } : { scale: 1 }}
-            className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.1] bg-gradient-to-br from-white/[0.07] to-black/40 text-cyan-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.13)]"
+            className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/[0.1] bg-gradient-to-br from-white/[0.07] to-black/40 text-white/75 shadow-[inset_0_1px_1px_rgba(255,255,255,0.13)]"
           >
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -203,9 +203,9 @@ function DocCard({ doc, index, onOpen }: { doc: DocumentItem; index: number; onO
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.2 + index * 0.05 }}
       onClick={onOpen}
-      className="flex w-full items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left transition-all hover:border-white/[0.14] hover:bg-white/[0.04]"
+      className="group flex w-full items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 text-left transition-all hover:border-white/[0.14] hover:bg-white/[0.04] hover:shadow-[0_14px_40px_-30px_rgba(255,255,255,0.10)]"
     >
-      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-black/40 text-cyan-300/90">
+      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-black/40 text-white/80 transition group-hover:border-white/15 group-hover:text-white/90">
         <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />
@@ -267,7 +267,7 @@ function DetailDrawer({ doc, onClose }: { doc: DocumentItem; onClose: () => void
         </div>
         <div className="flex-1 overflow-y-auto p-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.07] to-black/40 text-cyan-300">
+            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.07] to-black/40 text-white/75">
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <polyline points="14 2 14 8 20 8" />
@@ -301,9 +301,9 @@ function DetailDrawer({ doc, onClose }: { doc: DocumentItem; onClose: () => void
             </p>
           </div>
 
-          <div className="mt-4 rounded-xl border border-cyan-500/20 bg-cyan-500/[0.04] p-4">
-            <p className="flex items-center gap-2 text-[12.5px] font-medium text-cyan-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+          <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <p className="flex items-center gap-2 text-[12.5px] font-medium text-white/75">
+              <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
               Extracted entities &amp; relationships
             </p>
             <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/55">

@@ -7,7 +7,7 @@ export function ComingSoon({
   title,
   description,
   icon,
-  accent = "#38bdf8",
+  accent = "#e5e7eb",
   points = [],
 }: {
   title: string;

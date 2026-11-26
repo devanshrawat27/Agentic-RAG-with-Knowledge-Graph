@@ -82,6 +82,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .catch(() => router.replace("/login"));
   }, [router]);
 
+  useEffect(() => {
+    const onUserChanged = () => {
+      getMe()
+        .then(setUser)
+        .catch(() => {
+          /* ignore */
+        });
+    };
+    window.addEventListener("user:changed", onUserChanged);
+    return () => window.removeEventListener("user:changed", onUserChanged);
+  }, []);
+
   const loadChats = useCallback(() => {
     listChats()
       .then(setRecentChats)
@@ -131,7 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#050505] text-white">
       {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 top-1/3 h-[600px] w-[600px] rounded-full bg-cyan-500/[0.03] blur-3xl" />
+        <div className="absolute -left-40 top-1/3 h-[600px] w-[600px] rounded-full bg-white/[0.02] blur-3xl" />
         <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-emerald-500/[0.025] blur-3xl" />
       </div>
 
@@ -151,7 +163,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         role="separator"
         aria-orientation="vertical"
       >
-        <div className="h-12 w-0.5 rounded-full bg-white/[0.06] transition-all duration-200 group-hover:bg-cyan-400/60" />
+        <div className="h-12 w-0.5 rounded-full bg-white/[0.06] transition-all duration-200 group-hover:bg-white/50" />
       </div>
 
 
@@ -219,6 +231,15 @@ function SidebarInner({
   recentChats: ChatSummary[];
   onLogout: () => void;
 }) {
+  const initials =
+    (user?.name ?? "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() ?? "")
+      .join("") || "?";
+
   return (
     <>
       {/* Logo */}
@@ -229,7 +250,7 @@ function SidebarInner({
             alt="TrueDocs"
             width={40}
             height={40}
-            className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(56,189,248,0.35)]"
+            className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(255,255,255,0.10)]"
             priority
           />
           <span className="text-[20px] font-semibold tracking-tight">TrueDocs</span>
@@ -284,7 +305,7 @@ function SidebarInner({
                 <Link
                   key={c.id}
                   href={`/chat?chat=${c.id}`}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-white/60 transition hover:bg-white/[0.03] hover:text-white/90"
+                  className="flex w-full items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-left text-[13px] text-white/60 transition hover:border-white/[0.06] hover:bg-white/[0.03] hover:text-white/90"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -300,15 +321,19 @@ function SidebarInner({
       {/* User + logout */}
       <div className="border-t border-white/[0.05] p-3">
         <div className="flex items-center gap-3 rounded-xl px-2 py-2">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 via-cyan-900/30 to-black text-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.3)]">
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
+          <div className="relative flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.12] bg-gradient-to-br from-slate-600/60 via-slate-800/70 to-black text-[11.5px] font-semibold tracking-wide text-white/90">
+            {initials}
+            <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[#050505] bg-emerald-400" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-semibold text-white">{user?.name ?? "…"}</p>
-            <p className="truncate text-[11.5px] text-white/45">{user?.email ?? ""}</p>
+            <Link
+              href="/settings"
+              title="Open settings"
+              className="block rounded-lg px-1 py-0.5 transition hover:bg-white/[0.04]"
+            >
+              <p className="truncate text-[13px] font-semibold text-white">{user?.name ?? "…"}</p>
+              <p className="truncate text-[11.5px] text-white/45">{user?.email ?? ""}</p>
+            </Link>
           </div>
           <button
             onClick={onLogout}

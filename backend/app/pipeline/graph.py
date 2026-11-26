@@ -52,12 +52,18 @@ def build_graph():
     return graph.compile()
 
 
-def run_pipeline(question: str, user_id: int, top_k: int = 5) -> AgentState:
+def run_pipeline(
+    question: str,
+    user_id: int,
+    top_k: int = 8,
+    doc_ids: list[str] | None = None,
+) -> AgentState:
     """Run the full agent chain for one question, scoped to a single user."""
     state: AgentState = {
         "question": question,
         "user_id": user_id,
         "top_k": top_k,
+        "doc_ids": doc_ids,
         "loop_count": 0,
     }
     return build_graph().invoke(state)

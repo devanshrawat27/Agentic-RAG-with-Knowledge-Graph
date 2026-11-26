@@ -6,20 +6,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   askQuestion,
   getChat,
+  listCollections,
   uploadDocument,
   type ChatResponse,
   type Citation,
+  type CollectionItem,
 } from "@/lib/api";
 import { AppShell } from "@/components/app/AppShell";
 import { useResizable } from "@/components/app/useResizable";
 import { DividerHandle } from "@/components/app/DividerHandle";
 import { AgentStatus, VerificationBadge } from "@/components/chat/AgentStatus";
+import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
+import { useTypewriter } from "@/components/chat/useTypewriter";
+import { SourceViewer } from "@/components/chat/SourceViewer";
 
 interface Turn {
   question: string;
   response?: ChatResponse;
   error?: string;
   loading?: boolean;
+  animate?: boolean;
 }
 
 function notifyChatsChanged() {
@@ -41,7 +47,7 @@ const EXAMPLES = [
   {
     title: "Summarize a document",
     query: "Summarize the key terms and obligations in the main agreement.",
-    accent: "#38bdf8",
+    accent: "#fbbf24",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -54,7 +60,7 @@ const EXAMPLES = [
   {
     title: "Find connections",
     query: "What is the relationship between the vendor and the liability cap?",
-    accent: "#a78bfa",
+    accent: "#f472b6",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="6" cy="6" r="2.5" />
@@ -79,7 +85,7 @@ const EXAMPLES = [
   {
     title: "Compare documents",
     query: "Compare the liability limits across all uploaded contracts.",
-    accent: "#60a5fa",
+    accent: "#fb923c",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="h-4.5 w-4.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="12" height="14" rx="2" />
@@ -89,14 +95,28 @@ const EXAMPLES = [
   },
 ];
 
+function sentenceForMarker(answer: string, index: number): string {
+  const marker = new RegExp(
+    `\\[(?:\\d+\\s*,\\s*)*${index}(?:\\s*,\\s*\\d+)*\\]`,
+  );
+  const sentences = answer.split(/(?<=[.!?])\s+/);
+  return sentences.find((sentence) => marker.test(sentence)) ?? answer;
+}
+
 function ChatPage() {
   const searchParams = useSearchParams();
   const chatParam = searchParams.get("chat");
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [activeCitations, setActiveCitations] = useState<Citation[]>([]);
+  const [sourceView, setSourceView] = useState<{
+    citation: Citation;
+    claimText?: string;
+  } | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [chatId, setChatId] = useState<number | null>(null);
+  const [collections, setCollections] = useState<CollectionItem[]>([]);
+  const [collectionId, setCollectionId] = useState<number | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -136,7 +156,7 @@ function ChatPage() {
               response: {
                 answer: m.content,
                 citations: m.citations,
-                mode: "verified",
+                mode: "saved",
                 chat_id: detail.id,
               },
             });
@@ -162,6 +182,21 @@ function ChatPage() {
       cancelled = true;
     };
   }, [chatParam]);
+
+  useEffect(() => {
+    listCollections()
+      .then((rows) => {
+        setCollections(rows);
+        setCollectionId((current) =>
+          current != null && !rows.some((row) => row.id === current)
+            ? null
+            : current,
+        );
+      })
+      .catch(() => {
+        /* keep the picker empty if collections are unavailable */
+      });
+  }, []);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -198,9 +233,15 @@ function ChatPage() {
     const index = turns.length;
     setTurns((prev) => [...prev, { question: trimmed, loading: true }]);
     try {
-      const response = await askQuestion(trimmed, 5, "verified", chatId);
+      const response = await askQuestion(
+        trimmed,
+        8,
+        "verified",
+        chatId,
+        collectionId,
+      );
       setChatId(response.chat_id);
-      setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response } : t)));
+      setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response, animate: true } : t)));
       setActiveCitations(response.citations);
       notifyChatsChanged();
     } catch (err) {
@@ -218,6 +259,10 @@ function ChatPage() {
 
   const hasTurns = turns.length > 0;
   const uploading = attachments.some((a) => a.status === "uploading");
+  const lastAnswer = turns
+    .slice()
+    .reverse()
+    .find((turn) => turn.response)?.response?.answer;
 
   const attachInput = (
     <input
@@ -241,7 +286,7 @@ function ChatPage() {
               {loadingHistory ? (
                 <div className="flex min-h-[60vh] items-center justify-center">
                   <div className="flex items-center gap-2.5 text-[13px] text-white/45">
-                    <svg className="h-4 w-4 animate-spin text-cyan-300" viewBox="0 0 24 24" fill="none">
+                    <svg className="h-4 w-4 animate-spin text-white/75" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
                       <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                     </svg>
@@ -258,11 +303,20 @@ function ChatPage() {
                   uploading={uploading}
                   onAttachClick={() => fileInputRef.current?.click()}
                   onRemoveAttachment={removeAttachment}
+                  collections={collections}
+                  collectionId={collectionId}
+                  onCollectionChange={setCollectionId}
                 />
               ) : (
                 <div className="space-y-8 pb-40">
                   {turns.map((turn, i) => (
-                    <TurnView key={i} turn={turn} />
+                    <TurnView
+                      key={i}
+                      turn={turn}
+                      onOpenSource={(citation, claimText) =>
+                        setSourceView({ citation, claimText })
+                      }
+                    />
                   ))}
                   <div ref={bottomRef} />
                 </div>
@@ -276,6 +330,15 @@ function ChatPage() {
               className="w-full border-t border-white/[0.06] bg-[#050505]/90 backdrop-blur-xl"
             >
               <div className="mx-auto w-full max-w-3xl px-5 py-4 sm:px-8">
+                {collections.length > 0 && (
+                  <div className="mb-2 flex items-center justify-end">
+                    <CollectionPicker
+                      collections={collections}
+                      value={collectionId}
+                      onChange={setCollectionId}
+                    />
+                  </div>
+                )}
                 {attachments.length > 0 && (
                   <AttachmentChips
                     attachments={attachments}
@@ -310,6 +373,9 @@ function ChatPage() {
                     </svg>
                   </button>
                 </div>
+                <p className="mt-2 text-center text-[10.5px] text-white/25">
+                  Answers are grounded in your uploaded documents.
+                </p>
               </div>
             </form>
           )}
@@ -326,10 +392,24 @@ function ChatPage() {
           className="hidden h-screen flex-shrink-0 border-l border-white/[0.05] bg-white/[0.012] xl:block"
           style={{ width: sourcesWidth }}
         >
-          <SourcesPanel citations={activeCitations} hasTurns={hasTurns} />
+          <SourcesPanel
+            citations={activeCitations}
+            hasTurns={hasTurns}
+            answer={lastAnswer}
+            onOpenSource={(citation, claimText) =>
+              setSourceView({ citation, claimText })
+            }
+          />
         </aside>
       </div>
       {attachInput}
+      {sourceView && (
+        <SourceViewer
+          citation={sourceView.citation}
+          claimText={sourceView.claimText}
+          onClose={() => setSourceView(null)}
+        />
+      )}
     </AppShell>
   );
 }
@@ -369,7 +449,7 @@ function AttachmentChips({
             title={a.error}
           >
             {a.status === "uploading" ? (
-              <svg className="h-3.5 w-3.5 animate-spin text-cyan-300" viewBox="0 0 24 24" fill="none">
+              <svg className="h-3.5 w-3.5 animate-spin text-white/75" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
                 <path d="M21 12a9 9 0 0 1-9 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               </svg>
@@ -403,6 +483,56 @@ function AttachmentChips({
   );
 }
 
+function CollectionPicker({
+  collections,
+  value,
+  onChange,
+}: {
+  collections: CollectionItem[];
+  value: number | null;
+  onChange: (id: number | null) => void;
+}) {
+  if (collections.length === 0) return null;
+
+  return (
+    <label className="inline-flex items-center gap-2 text-[11.5px] text-white/40">
+      <svg
+        className="h-3.5 w-3.5 text-white/30"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      </svg>
+      <span className="uppercase tracking-wider text-white/30">Scope</span>
+      <select
+        value={value ?? ""}
+        onChange={(event) =>
+          onChange(event.target.value ? Number(event.target.value) : null)
+        }
+        className="max-w-[220px] rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[12px] text-white/80 outline-none transition hover:border-white/[0.16] focus:border-white/20"
+      >
+        <option value="" className="bg-[#0a0b0e]">
+          All documents
+        </option>
+        {collections.map((collection) => (
+          <option
+            key={collection.id}
+            value={collection.id}
+            disabled={collection.document_count === 0}
+            className="bg-[#0a0b0e]"
+          >
+            {collection.name} ({collection.document_count})
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 function HeroInput({
   question,
   setQuestion,
@@ -412,6 +542,9 @@ function HeroInput({
   uploading,
   onAttachClick,
   onRemoveAttachment,
+  collections,
+  collectionId,
+  onCollectionChange,
 }: {
   question: string;
   setQuestion: (v: string) => void;
@@ -421,6 +554,9 @@ function HeroInput({
   uploading: boolean;
   onAttachClick: () => void;
   onRemoveAttachment: (name: string) => void;
+  collections: CollectionItem[];
+  collectionId: number | null;
+  onCollectionChange: (id: number | null) => void;
 }) {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
@@ -429,11 +565,7 @@ function HeroInput({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/15 via-cyan-900/20 to-black text-cyan-300 shadow-[0_0_30px_rgba(6,182,212,0.25)]">
-          <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4l-6.4 4.8 2.4-7.2-6-4.8h7.6L12 2Z" />
-          </svg>
-        </div>
+        <AssistantAvatar size={56} className="mb-5" />
         <h1 className="text-[30px] font-semibold tracking-tight text-white sm:text-[36px]">
           Ask your documents
         </h1>
@@ -449,7 +581,16 @@ function HeroInput({
         transition={{ duration: 0.6, delay: 0.15 }}
         className="mt-8 w-full max-w-2xl"
       >
-        <div className="group relative flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-2 backdrop-blur-xl transition focus-within:border-white/[0.22] focus-within:shadow-[0_0_40px_-10px_rgba(56,189,248,0.4)]">
+        {collections.length > 0 && (
+          <div className="mb-3 flex justify-center">
+            <CollectionPicker
+              collections={collections}
+              value={collectionId}
+              onChange={onCollectionChange}
+            />
+          </div>
+        )}
+        <div className="group relative flex items-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.03] p-2 backdrop-blur-xl transition focus-within:border-white/[0.22] focus-within:shadow-[0_0_40px_-10px_rgba(255,255,255,0.10)]">
           <button
             type="button"
             onClick={onAttachClick}
@@ -533,7 +674,28 @@ function HeroInput({
   );
 }
 
-function TurnView({ turn }: { turn: Turn }) {
+function TurnView({
+  turn,
+  onOpenSource,
+}: {
+  turn: Turn;
+  onOpenSource: (citation: Citation, claimText: string) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const answer = turn.response?.answer ?? "";
+  const { displayed, done } = useTypewriter(answer, Boolean(turn.animate));
+
+  async function copyAnswer() {
+    if (!turn.response) return;
+    try {
+      await navigator.clipboard.writeText(turn.response.answer);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard may be unavailable */
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -543,18 +705,14 @@ function TurnView({ turn }: { turn: Turn }) {
     >
       {/* User question */}
       <div className="flex justify-end">
-        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-[14px] text-white/95">
+        <div className="max-w-[85%] rounded-2xl rounded-br-md border border-white/[0.1] bg-gradient-to-br from-white/[0.075] to-white/[0.025] px-4 py-3 text-[14px] text-white/95 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06)]">
           {turn.question}
         </div>
       </div>
 
       {/* Assistant answer */}
       <div className="flex gap-3">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-cyan-400/30 bg-gradient-to-br from-cyan-500/15 to-black text-cyan-300">
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4l-6.4 4.8 2.4-7.2-6-4.8h7.6L12 2Z" />
-          </svg>
-        </div>
+        <AssistantAvatar size={32} />
         <div className="min-w-0 flex-1">
           <AgentStatus loading={turn.loading} response={turn.response} />
 
@@ -565,27 +723,69 @@ function TurnView({ turn }: { turn: Turn }) {
           )}
 
           {turn.response && (
-            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <VerificationBadge response={turn.response} />
-                <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
-                  {turn.response.mode}
-                </span>
-              </div>
-              <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-white/90">
-                {turn.response.answer}
-              </p>
-
-              {turn.response.citations.length > 0 && (
-                <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">
-                    Sources
-                  </p>
-                  {turn.response.citations.map((c) => (
-                    <CitationRow key={c.index} citation={c} />
-                  ))}
+            <div className="relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-b from-white/[0.035] to-white/[0.012]">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              <div className="px-5 py-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <VerificationBadge response={turn.response} />
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-white/35">
+                    {turn.response.mode}
+                  </span>
+                  {turn.response.citations.length > 0 && (
+                    <span className="text-[11px] text-white/30">
+                      · {turn.response.citations.length} source
+                      {turn.response.citations.length === 1 ? "" : "s"}
+                    </span>
+                  )}
+                  <button
+                    onClick={copyAnswer}
+                    className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[11px] font-medium text-white/50 transition hover:border-white/[0.16] hover:text-white/85"
+                    title="Copy answer"
+                  >
+                    {copied ? (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="9" y="9" width="11" height="11" rx="2" />
+                        <path d="M5 15V5a2 2 0 0 1 2-2h8" />
+                      </svg>
+                    )}
+                    {copied ? "Copied" : "Copy"}
+                  </button>
                 </div>
-              )}
+                <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-white/90">
+                  {turn.animate && !done ? (
+                    <>
+                      {displayed}
+                      <span className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-white/70 align-baseline" />
+                    </>
+                  ) : (
+                    turn.response.answer
+                  )}
+                </p>
+
+                {turn.response.citations.length > 0 && (!turn.animate || done) && (
+                  <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">
+                      Sources
+                    </p>
+                    {turn.response.citations.map((c) => (
+                      <CitationRow
+                        key={c.index}
+                        citation={c}
+                        onOpen={() =>
+                          onOpenSource(
+                            c,
+                            sentenceForMarker(answer, c.index),
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -594,34 +794,67 @@ function TurnView({ turn }: { turn: Turn }) {
   );
 }
 
-function CitationRow({ citation }: { citation: Citation }) {
+function CitationRow({
+  citation,
+  onOpen,
+}: {
+  citation: Citation;
+  onOpen?: () => void;
+}) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-1.5 text-[12.5px] font-semibold text-white/90">
-          <span className="flex h-4.5 w-4.5 items-center justify-center rounded bg-cyan-500/15 text-[10px] font-mono font-bold text-cyan-300">
+    <button
+      type="button"
+      onClick={onOpen}
+      title="Open source preview"
+      className="group w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-left transition hover:border-amber-400/25 hover:bg-white/[0.04]"
+    >
+      <span className="flex items-start justify-between gap-2">
+        <span className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-white/90">
+          <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-white/[0.06] font-mono text-[10px] font-bold text-white/75">
             {citation.index}
           </span>
-          {citation.filename ?? citation.doc_id ?? "Source"}
+          <span className="truncate">
+            {citation.filename ?? citation.doc_id ?? "Source"}
+          </span>
         </span>
-        {typeof citation.score === "number" && (
-          <span className="text-[10.5px] font-mono text-white/40">
+        {typeof citation.score === "number" && citation.score >= 0.3 && (
+          <span className="flex-shrink-0 font-mono text-[10.5px] text-white/40">
             {(citation.score * 100).toFixed(1)}%
           </span>
         )}
-      </div>
-      <p className="mt-1.5 line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
+      </span>
+      <span className="mt-2 block line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
         {citation.snippet}
-      </p>
-    </div>
+      </span>
+      {citation.chunk_id && (
+        <span className="mt-2 block truncate font-mono text-[10px] text-white/25">
+          {citation.chunk_id}
+        </span>
+      )}
+    </button>
   );
 }
 
-function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns: boolean }) {
+function SourcesPanel({
+  citations,
+  hasTurns,
+  answer,
+  onOpenSource,
+}: {
+  citations: Citation[];
+  hasTurns: boolean;
+  answer?: string;
+  onOpenSource: (citation: Citation, claimText: string) => void;
+}) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-16 items-center border-b border-white/[0.05] px-5">
+      <div className="flex h-16 items-center justify-between border-b border-white/[0.05] px-5">
         <h2 className="text-[13.5px] font-semibold text-white">Sources</h2>
+        {hasTurns && (
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-0.5 text-[10.5px] font-medium text-white/45">
+            {citations.length}
+          </span>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto p-4 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-white/[0.08] hover:[&::-webkit-scrollbar-thumb]:bg-white/[0.15]">
         {!hasTurns ? (
@@ -641,7 +874,13 @@ function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns
         ) : (
           <div className="space-y-2.5">
             {citations.map((c) => (
-              <CitationRow key={c.index} citation={c} />
+              <CitationRow
+                key={c.index}
+                citation={c}
+                onOpen={() =>
+                  onOpenSource(c, sentenceForMarker(answer ?? "", c.index))
+                }
+              />
             ))}
           </div>
         )}

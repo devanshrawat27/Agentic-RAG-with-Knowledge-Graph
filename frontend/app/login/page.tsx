@@ -154,7 +154,7 @@ export default function LoginPage() {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="peer h-4 w-4 cursor-pointer appearance-none rounded-[5px] border border-white/[0.18] bg-white/[0.03] transition checked:border-cyan-400/60 checked:bg-cyan-400/90 hover:border-white/[0.32]"
+                  className="peer h-4 w-4 cursor-pointer appearance-none rounded-[5px] border border-white/[0.18] bg-white/[0.03] transition checked:border-white/30 checked:bg-white/80 hover:border-white/[0.32]"
                 />
                 <svg
                   viewBox="0 0 24 24"
@@ -172,7 +172,7 @@ export default function LoginPage() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-[12.5px] font-medium text-cyan-300/90 transition hover:text-cyan-200"
+              className="text-[12.5px] font-medium text-white/80 transition hover:text-white/90"
             >
               Forgot password?
             </Link>
@@ -214,7 +214,7 @@ export default function LoginPage() {
           className="pt-1 text-center text-[13px] text-white/55"
         >
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-cyan-300 transition hover:text-cyan-200">
+          <Link href="/signup" className="font-medium text-white/75 transition hover:text-white/90">
             Create one
           </Link>
         </motion.p>

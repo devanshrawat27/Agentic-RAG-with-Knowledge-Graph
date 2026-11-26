@@ -92,14 +92,17 @@ def _as_chat(question: str, user_id: int, temperature: float) -> dict:
 def answer_baseline(
     user_id: int,
     question: str,
-    top_k: int = 5,
+    top_k: int = 8,
     temperature: float = 0.0,
+    doc_ids: list[str] | None = None,
 ) -> dict:
     # Greetings / small talk never need retrieval — answer them directly.
     if _is_smalltalk(question):
         return _as_chat(question, user_id, temperature)
 
-    evidence = retrieve_vector(user_id, question, top_k=top_k)
+    evidence = retrieve_vector(
+        user_id, question, top_k=top_k, doc_ids=doc_ids
+    )
     # Drop weak nearest-neighbour matches so unrelated questions don't get
     # answered from whatever chunk happens to be closest.
     evidence = [

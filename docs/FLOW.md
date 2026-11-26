@@ -171,6 +171,12 @@ deferred to a later enhancement.
 | `POST` | `/api/chat` | run the pipeline for a question |
 | `GET` | `/api/chat/stream` | (optional) SSE status/progress stream |
 | `GET` | `/api/graph` | graph subgraph for visualization |
+| `GET` | `/api/chunks/{chunk_id}` | full source chunk + neighbours for citation preview |
+| `GET` | `/api/documents/by-doc/{doc_id}/file` | original uploaded file (if stored) |
+| `GET` | `/api/documents/by-doc/{doc_id}/chunks` | all ingested chunks for the full-document view |
+| `GET, POST` | `/api/collections` | list / create collections |
+| `PATCH, DELETE` | `/api/collections/{id}` | rename / delete a collection |
+| `POST, DELETE` | `/api/collections/{id}/documents[/{doc_id}]` | add / remove documents |
 
 ## Part D — Evaluation flow (Phase 3)
 

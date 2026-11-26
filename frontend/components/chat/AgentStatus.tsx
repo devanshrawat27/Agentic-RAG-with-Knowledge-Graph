@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { ChatResponse } from "@/lib/api";
-
-const STEPS = ["Planning", "Retrieving", "Verifying", "Answering"] as const;
 
 const TONES = {
   ok: "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-300",
@@ -30,53 +28,30 @@ export function AgentStatus({
   loading?: boolean;
   response?: ChatResponse;
 }) {
-  const [step, setStep] = useState(0);
-
-  useEffect(() => {
-    if (!loading) return;
-    setStep(0);
-    const timer = setInterval(() => {
-      setStep((current) => Math.min(current + 1, STEPS.length - 1));
-    }, 1600);
-    return () => clearInterval(timer);
-  }, [loading]);
-
   if (loading) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          {STEPS.map((label, index) => {
-            const done = index < step;
-            const active = index === step;
-            return (
-              <span
-                key={label}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${
-                  done
-                    ? "border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-300"
-                    : active
-                      ? "border-cyan-400/30 bg-cyan-500/[0.08] text-cyan-200"
-                      : "border-white/[0.06] bg-white/[0.02] text-white/30"
-                }`}
-              >
-                <span className={active ? "animate-pulse" : ""}>
-                  {done ? "✓" : active ? "●" : "○"}
-                </span>
-                {label}
-              </span>
-            );
-          })}
-        </div>
-        <p className="mt-2 text-[11px] text-white/35">
-          Running the verified pipeline…
-        </p>
+      <div className="flex items-center gap-2.5 rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+        <span className="flex items-center gap-1">
+          {[0, 1, 2].map((dot) => (
+            <span
+              key={dot}
+              className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/60"
+              style={{ animationDelay: `${dot * 0.15}s` }}
+            />
+          ))}
+        </span>
+        <span className="text-[12.5px] text-white/45">Thinking…</span>
       </div>
     );
   }
 
   if (!response || response.mode === "chat") return null;
 
+  const claims = response.claims ?? [];
+  const sources = response.citations.length;
+
   if (response.mode === "baseline") {
+    if (sources === 0) return null;
     return (
       <div className="mb-3">
         <Chip>Flat RAG · no verification</Chip>
@@ -84,19 +59,19 @@ export function AgentStatus({
     );
   }
 
-  const claims = response.claims ?? [];
+  // The trace only makes sense when a verified run actually produced claims.
+  // History messages don't persist claims, so they correctly show nothing.
+  if (claims.length === 0) return null;
+
   const supported = claims.filter((claim) => claim.supported).length;
   const planned = response.sub_questions?.length ?? 0;
   const loops = response.loop_count ?? 0;
-  const sources = response.citations.length;
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-1.5">
-      <Chip>Planned {planned}</Chip>
+      {planned > 0 && <Chip>Planned {planned}</Chip>}
       <Chip>Hybrid retrieval</Chip>
-      <Chip
-        tone={claims.length > 0 && supported === claims.length ? "ok" : "warn"}
-      >
+      <Chip tone={claims.length > 0 && supported === claims.length ? "ok" : "warn"}>
         Verified {supported}/{claims.length}
       </Chip>
       {loops > 0 && <Chip tone="warn">Extra retrieval {loops}×</Chip>}
@@ -111,6 +86,7 @@ export function VerificationBadge({ response }: { response: ChatResponse }) {
   if (response.mode === "chat") return null;
 
   if (response.mode === "baseline") {
+    if (response.citations.length === 0) return null;
     return (
       <span
         className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold ${TONES.muted}`}
@@ -121,19 +97,11 @@ export function VerificationBadge({ response }: { response: ChatResponse }) {
   }
 
   const claims = response.claims ?? [];
+  if (claims.length === 0) return null;
+
   const supported = claims.filter((claim) => claim.supported).length;
-
-  if (claims.length === 0) {
-    return (
-      <span
-        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold ${TONES.muted}`}
-      >
-        No verified claims
-      </span>
-    );
-  }
-
   const fullySupported = supported === claims.length;
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10.5px] font-semibold ${

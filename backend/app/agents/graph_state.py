@@ -18,6 +18,7 @@ class AgentState(TypedDict, total=False):
     question: str
     user_id: int
     top_k: int
+    doc_ids: list[str] | None
     # Planner output
     sub_questions: list[str]
     # Retriever output (hybrid: vector + graph)

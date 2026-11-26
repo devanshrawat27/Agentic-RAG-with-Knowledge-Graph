@@ -158,6 +158,14 @@ middleware (which only checks cookie presence) won't see it. Fix at deploy
 time: put both behind one domain/subdomain, or proxy `/api` through the
 frontend, and set `secure=True`. Raise this before deploying.
 
+## Gemini key rotation (operational)
+
+`GEMINI_API_KEYS` accepts comma/newline-separated keys (or a JSON array); the
+single `GEMINI_API_KEY` is still supported and is tried first. A key that hits
+quota/429, an invalid-key error, or a transient 503/high-demand response is
+cooled down and the next key is used for both chat and embeddings. Keys must
+never be logged or committed; `.env.example` only holds placeholders.
+
 ## Build / run commands
 
 ### Backend (Windows PowerShell, from `backend/`)
@@ -264,11 +272,13 @@ blocked on it.
 
 **Phase E (frontend) in progress:** the existing dark/glass design system is the
 E0 baseline, and the chat UI, resizable history sidebar, citations/sources panel
-and fixed-sequence agent status already exist (E1/E2/E4). E3 is now done:
-`GET /api/graph` (auth-scoped, Neo4j snapshot, 65 backend tests) plus an
-interactive `react-force-graph` page with label filters, search, mentions
-toggle, node details and neighbours. Next: finish E1/E4 polish, then Phase F
-(evaluation) per `docs/IMPLEMENTATION_PLAN.md`.
+and fixed-sequence agent status already exist (E1/E2/E4). E3 is done
+(`GET /api/graph` + interactive `react-force-graph` page). Collections and
+Settings are now real pages, and **chat can be scoped to a collection** —
+retrieval filters Qdrant/Neo4j by that collection's `doc_id`s. Citation rows now
+open the exact ingested source chunk (with neighbours) and highlight the
+best-matching sentence. Next: the 3-stage evaluation (Phase F) per
+`docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open items (resolve when reached; no need to block)
 

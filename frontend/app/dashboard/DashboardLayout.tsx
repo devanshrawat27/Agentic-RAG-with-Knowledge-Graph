@@ -84,7 +84,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, user, onLo
                 alt="TrueDocs"
                 width={40}
                 height={40}
-                className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(56,189,248,0.35)]"
+                className="h-10 w-10 object-contain drop-shadow-[0_0_14px_rgba(255,255,255,0.10)]"
                 priority
               />
               <span className="text-[19px] font-semibold tracking-tight">TrueDocs</span>
@@ -134,7 +134,7 @@ export function Sidebar({ open, collapsed, onClose, onToggleCollapse, user, onLo
         {!collapsed && (
           <div className="border-t border-white/[0.04] p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 via-cyan-900/30 to-black text-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.35)]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/20 bg-gradient-to-br from-white/10 via-slate-800/40 to-black text-white/75 shadow-[0_0_16px_rgba(255,255,255,0.10)]">
                 <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                   <circle cx="12" cy="7" r="4" />
@@ -246,7 +246,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     <div className="min-h-screen bg-[#050505] text-white">
       {/* Background ambient */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 top-1/2 h-[600px] w-[600px] rounded-full bg-cyan-500/[0.03] blur-3xl" />
+        <div className="absolute -left-40 top-1/2 h-[600px] w-[600px] rounded-full bg-white/[0.02] blur-3xl" />
         <div className="absolute -right-40 bottom-0 h-[500px] w-[500px] rounded-full bg-emerald-500/[0.025] blur-3xl" />
       </div>
 

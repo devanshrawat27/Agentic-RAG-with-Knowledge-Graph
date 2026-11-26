@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { listDocuments, type DocumentItem } from "@/lib/api";
 
 const STATUS_STYLES: Record<string, { label: string; color: string }> = {
+  ready: { label: "Ready", color: "#34d399" },
   processed: { label: "Ready", color: "#34d399" },
   pending: { label: "Processing", color: "#f59e0b" },
   processing: { label: "Processing", color: "#f59e0b" },
@@ -77,7 +78,7 @@ export function DashboardHome({ userName }: { userName?: string }) {
           href="/documents"
           title="Documents"
           description="Upload PDFs, DOCX, PPT and more to build your knowledge base."
-          accent="#38bdf8"
+          accent="#e5e7eb"
           index={0}
           icon={
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -92,7 +93,7 @@ export function DashboardHome({ userName }: { userName?: string }) {
           href="/chat"
           title="Chat"
           description="Ask multi-hop questions and get answers cited back to your sources."
-          accent="#a78bfa"
+          accent="#f472b6"
           index={1}
           icon={
             <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -112,7 +113,7 @@ export function DashboardHome({ userName }: { userName?: string }) {
           <h2 className="text-[18px] font-semibold text-white">Your Documents</h2>
           <a
             href="/documents"
-            className="text-[13px] font-medium text-cyan-300 transition hover:text-cyan-200"
+            className="text-[13px] font-medium text-white/75 transition hover:text-white/90"
           >
             Manage
           </a>
@@ -191,7 +192,7 @@ function DocumentRow({ doc, index }: { doc: DocumentItem; index: number }) {
       transition={{ duration: 0.4, delay: 0.25 + index * 0.06 }}
       className="flex items-center gap-4 rounded-xl border border-white/[0.05] bg-white/[0.015] p-4 transition-all hover:border-white/[0.12] hover:bg-white/[0.03]"
     >
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-black/40 text-cyan-300/90">
+      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-gradient-to-br from-white/[0.06] to-black/40 text-white/80">
         <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
           <polyline points="14 2 14 8 20 8" />

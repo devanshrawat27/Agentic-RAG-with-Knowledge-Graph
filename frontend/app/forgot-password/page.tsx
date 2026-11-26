@@ -196,7 +196,7 @@ export default function ForgotPasswordPage() {
           >
             <Link
               href="/login"
-              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-cyan-300 transition hover:text-cyan-200"
+              className="inline-flex items-center gap-1.5 text-[13px] font-medium text-white/75 transition hover:text-white/90"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -285,7 +285,7 @@ export default function ForgotPasswordPage() {
           transition={{ duration: 0.5, delay: 0.66 }}
           className="pt-1 text-center text-[13px] text-white/45"
         >
-          <Link href="/login" className="font-medium text-white transition hover:text-cyan-200">
+          <Link href="/login" className="font-medium text-white transition hover:text-white/90">
             Back to sign in
           </Link>
         </motion.p>

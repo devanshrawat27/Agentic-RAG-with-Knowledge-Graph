@@ -8,10 +8,12 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     Boolean,
+    Column,
     DateTime,
     ForeignKey,
     Integer,
     String,
+    Table,
     Text,
     UniqueConstraint,
 )
@@ -26,6 +28,23 @@ class Base(DeclarativeBase):
     pass
 
 
+collection_documents = Table(
+    "collection_documents",
+    Base.metadata,
+    Column(
+        "collection_id",
+        ForeignKey("collections.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column(
+        "document_id",
+        ForeignKey("documents.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("added_at", DateTime(timezone=True), default=_utcnow),
+)
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -38,6 +57,9 @@ class User(Base):
 
     chats: Mapped[list["Chat"]] = relationship(cascade="all, delete-orphan")
     documents: Mapped[list["Document"]] = relationship(cascade="all, delete-orphan")
+    collections: Mapped[list["Collection"]] = relationship(
+        cascade="all, delete-orphan"
+    )
 
 
 class Token(Base):
@@ -93,4 +115,34 @@ class Document(Base):
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     entity_count: Mapped[int] = mapped_column(Integer, default=0)
     relationship_count: Mapped[int] = mapped_column(Integer, default=0)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+
+    collections: Mapped[list["Collection"]] = relationship(
+        secondary=collection_documents, back_populates="documents"
+    )
+
+
+class Collection(Base):
+    __tablename__ = "collections"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, onupdate=_utcnow
+    )
+
+    documents: Mapped[list["Document"]] = relationship(
+        secondary=collection_documents,
+        back_populates="collections",
+        order_by="Document.id",
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "name", name="uq_collection_user_name"),
+    )

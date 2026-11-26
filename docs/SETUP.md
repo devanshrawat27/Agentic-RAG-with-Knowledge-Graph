@@ -41,6 +41,23 @@ Generate a JWT secret:
 python -c "import secrets; print(secrets.token_urlsafe(48))"
 ```
 
+### Multiple Gemini keys (quota rotation)
+
+The free tier is small, so you can provide several keys. Add them comma-separated
+(or newline-separated / JSON array) in `.env`:
+
+```ini
+GEMINI_API_KEYS=key1,key2,key3
+```
+
+If a key returns `429` / quota, an invalid-key error, or a transient `503`
+high-demand response, it is put on a short cooldown and the next key is used
+automatically — for both chat and embeddings. Transient provider errors use a
+shorter cooldown than exhausted keys. Keys are never logged. Never commit
+`.env`.
+
+`GET /api/health` reports `llm_key_count` without exposing the keys.
+
 ## 2. Option A — run everything with Docker (recommended)
 
 ```powershell
@@ -57,6 +74,9 @@ docker compose up --build
 | PostgreSQL | localhost:5432 |
 
 Data persists in Docker volumes (`pgdata`, `neo4j-data`, `qdrant-storage`).
+Uploaded source files are kept under `backend/storage/` locally (Docker volume
+`backend-storage`) and are served only to the owning user via
+`/api/documents/by-doc/{doc_id}/file`.
 
 ## 3. Option B — run backend/frontend natively (dev, hot reload)
 
@@ -149,6 +169,7 @@ docker compose exec postgres psql -U postgres -d agentic_rag -c "select id,email
 | Value | Env var | Used for | Where to get it |
 |---|---|---|---|
 | Gemini API key | `GEMINI_API_KEY` | Primary LLM + embeddings | https://aistudio.google.com/apikey |
+| Extra Gemini keys | `GEMINI_API_KEYS` | Quota rotation (comma-separated) | Same page — add as many free-tier keys as you have |
 | Neo4j password | `NEO4J_PASSWORD` | Knowledge graph DB | Set your own |
 | PostgreSQL password | `POSTGRES_PASSWORD` | Relational DB (users, chats, docs) | Set your own |
 | JWT secret | `JWT_SECRET` | Auth session signing | Generate with command above |

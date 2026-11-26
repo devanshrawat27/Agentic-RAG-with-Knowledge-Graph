@@ -19,12 +19,14 @@ from app.core.security import (
 from app.db.models import Token, User
 from app.db.postgres_client import get_db
 from app.schemas.auth import (
+    ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,
     MessageResponse,
     ResetPasswordRequest,
     SignupRequest,
     TokenRequest,
+    UpdateProfileRequest,
     UserPublic,
 )
 
@@ -117,6 +119,44 @@ def logout(response: Response) -> MessageResponse:
 @router.get("/me", response_model=UserPublic)
 def me(current: User = Depends(get_current_user)) -> User:
     return current
+
+
+@router.patch("/me", response_model=UserPublic)
+def update_me(
+    payload: UpdateProfileRequest,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    user = db.get(User, current.id)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    name = payload.name.strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Name is required")
+    user.name = name
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/change-password", response_model=MessageResponse)
+def change_password(
+    payload: ChangePasswordRequest,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    user = db.get(User, current.id)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    if not verify_password(payload.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if payload.current_password == payload.new_password:
+        raise HTTPException(
+            status_code=400, detail="Choose a password different from the current one"
+        )
+    user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    return MessageResponse(message="Password updated")
 
 
 @router.post("/verify-email", response_model=MessageResponse)
