@@ -15,12 +15,14 @@ import { useResizable } from "@/components/app/useResizable";
 import { DividerHandle } from "@/components/app/DividerHandle";
 import { AgentStatus, VerificationBadge } from "@/components/chat/AgentStatus";
 import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
+import { useTypewriter } from "@/components/chat/useTypewriter";
 
 interface Turn {
   question: string;
   response?: ChatResponse;
   error?: string;
   loading?: boolean;
+  animate?: boolean;
 }
 
 function notifyChatsChanged() {
@@ -201,7 +203,7 @@ function ChatPage() {
     try {
       const response = await askQuestion(trimmed, 5, "verified", chatId);
       setChatId(response.chat_id);
-      setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response } : t)));
+      setTurns((prev) => prev.map((t, i) => (i === index ? { question: trimmed, response, animate: true } : t)));
       setActiveCitations(response.citations);
       notifyChatsChanged();
     } catch (err) {
@@ -535,6 +537,8 @@ function HeroInput({
 
 function TurnView({ turn }: { turn: Turn }) {
   const [copied, setCopied] = useState(false);
+  const answer = turn.response?.answer ?? "";
+  const { displayed, done } = useTypewriter(answer, Boolean(turn.animate));
 
   async function copyAnswer() {
     if (!turn.response) return;
@@ -607,10 +611,17 @@ function TurnView({ turn }: { turn: Turn }) {
                   </button>
                 </div>
                 <p className="whitespace-pre-wrap text-[14.5px] leading-relaxed text-white/90">
-                  {turn.response.answer}
+                  {turn.animate && !done ? (
+                    <>
+                      {displayed}
+                      <span className="ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[2px] animate-pulse rounded-full bg-cyan-300/80 align-baseline" />
+                    </>
+                  ) : (
+                    turn.response.answer
+                  )}
                 </p>
 
-                {turn.response.citations.length > 0 && (
+                {turn.response.citations.length > 0 && (!turn.animate || done) && (
                   <div className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
                     <p className="text-[11px] font-medium uppercase tracking-wider text-white/40">
                       Sources
