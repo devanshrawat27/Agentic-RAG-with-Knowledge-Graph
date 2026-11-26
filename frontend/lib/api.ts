@@ -312,6 +312,26 @@ export interface Claim {
   reason: string;
 }
 
+export interface SourceChunk {
+  chunk_id: string;
+  chunk_index: number;
+  doc_id: string | null;
+  filename: string | null;
+  text: string;
+  is_focus: boolean;
+}
+
+export interface SourceChunkContext {
+  focus: string;
+  chunks: SourceChunk[];
+}
+
+export function getChunkContext(
+  chunkId: string,
+): Promise<SourceChunkContext> {
+  return request(`/api/chunks/${encodeURIComponent(chunkId)}`);
+}
+
 export interface ChatResponse {
   answer: string;
   citations: Citation[];

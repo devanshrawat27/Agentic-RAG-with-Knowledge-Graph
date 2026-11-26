@@ -18,6 +18,7 @@ import { DividerHandle } from "@/components/app/DividerHandle";
 import { AgentStatus, VerificationBadge } from "@/components/chat/AgentStatus";
 import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
 import { useTypewriter } from "@/components/chat/useTypewriter";
+import { SourceViewer } from "@/components/chat/SourceViewer";
 
 interface Turn {
   question: string;
@@ -94,12 +95,24 @@ const EXAMPLES = [
   },
 ];
 
+function sentenceForMarker(answer: string, index: number): string {
+  const marker = new RegExp(
+    `\\[(?:\\d+\\s*,\\s*)*${index}(?:\\s*,\\s*\\d+)*\\]`,
+  );
+  const sentences = answer.split(/(?<=[.!?])\s+/);
+  return sentences.find((sentence) => marker.test(sentence)) ?? answer;
+}
+
 function ChatPage() {
   const searchParams = useSearchParams();
   const chatParam = searchParams.get("chat");
   const [question, setQuestion] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [activeCitations, setActiveCitations] = useState<Citation[]>([]);
+  const [sourceView, setSourceView] = useState<{
+    citation: Citation;
+    claimText?: string;
+  } | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [chatId, setChatId] = useState<number | null>(null);
   const [collections, setCollections] = useState<CollectionItem[]>([]);
@@ -246,6 +259,10 @@ function ChatPage() {
 
   const hasTurns = turns.length > 0;
   const uploading = attachments.some((a) => a.status === "uploading");
+  const lastAnswer = turns
+    .slice()
+    .reverse()
+    .find((turn) => turn.response)?.response?.answer;
 
   const attachInput = (
     <input
@@ -293,7 +310,13 @@ function ChatPage() {
               ) : (
                 <div className="space-y-8 pb-40">
                   {turns.map((turn, i) => (
-                    <TurnView key={i} turn={turn} />
+                    <TurnView
+                      key={i}
+                      turn={turn}
+                      onOpenSource={(citation, claimText) =>
+                        setSourceView({ citation, claimText })
+                      }
+                    />
                   ))}
                   <div ref={bottomRef} />
                 </div>
@@ -369,10 +392,24 @@ function ChatPage() {
           className="hidden h-screen flex-shrink-0 border-l border-white/[0.05] bg-white/[0.012] xl:block"
           style={{ width: sourcesWidth }}
         >
-          <SourcesPanel citations={activeCitations} hasTurns={hasTurns} />
+          <SourcesPanel
+            citations={activeCitations}
+            hasTurns={hasTurns}
+            answer={lastAnswer}
+            onOpenSource={(citation, claimText) =>
+              setSourceView({ citation, claimText })
+            }
+          />
         </aside>
       </div>
       {attachInput}
+      {sourceView && (
+        <SourceViewer
+          citation={sourceView.citation}
+          claimText={sourceView.claimText}
+          onClose={() => setSourceView(null)}
+        />
+      )}
     </AppShell>
   );
 }
@@ -637,7 +674,13 @@ function HeroInput({
   );
 }
 
-function TurnView({ turn }: { turn: Turn }) {
+function TurnView({
+  turn,
+  onOpenSource,
+}: {
+  turn: Turn;
+  onOpenSource: (citation: Citation, claimText: string) => void;
+}) {
   const [copied, setCopied] = useState(false);
   const answer = turn.response?.answer ?? "";
   const { displayed, done } = useTypewriter(answer, Boolean(turn.animate));
@@ -729,7 +772,16 @@ function TurnView({ turn }: { turn: Turn }) {
                       Sources
                     </p>
                     {turn.response.citations.map((c) => (
-                      <CitationRow key={c.index} citation={c} />
+                      <CitationRow
+                        key={c.index}
+                        citation={c}
+                        onOpen={() =>
+                          onOpenSource(
+                            c,
+                            sentenceForMarker(answer, c.index),
+                          )
+                        }
+                      />
                     ))}
                   </div>
                 )}
@@ -742,10 +794,21 @@ function TurnView({ turn }: { turn: Turn }) {
   );
 }
 
-function CitationRow({ citation }: { citation: Citation }) {
+function CitationRow({
+  citation,
+  onOpen,
+}: {
+  citation: Citation;
+  onOpen?: () => void;
+}) {
   return (
-    <div className="group rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-white/15 hover:bg-white/[0.04]">
-      <div className="flex items-start justify-between gap-2">
+    <button
+      type="button"
+      onClick={onOpen}
+      title="Open source preview"
+      className="group w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 text-left transition hover:border-amber-400/25 hover:bg-white/[0.04]"
+    >
+      <span className="flex items-start justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-white/90">
           <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md bg-white/[0.06] font-mono text-[10px] font-bold text-white/75">
             {citation.index}
@@ -759,20 +822,30 @@ function CitationRow({ citation }: { citation: Citation }) {
             {(citation.score * 100).toFixed(1)}%
           </span>
         )}
-      </div>
-      <p className="mt-2 line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
+      </span>
+      <span className="mt-2 block line-clamp-3 text-[12.5px] leading-relaxed text-white/55">
         {citation.snippet}
-      </p>
+      </span>
       {citation.chunk_id && (
-        <p className="mt-2 truncate font-mono text-[10px] text-white/25">
+        <span className="mt-2 block truncate font-mono text-[10px] text-white/25">
           {citation.chunk_id}
-        </p>
+        </span>
       )}
-    </div>
+    </button>
   );
 }
 
-function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns: boolean }) {
+function SourcesPanel({
+  citations,
+  hasTurns,
+  answer,
+  onOpenSource,
+}: {
+  citations: Citation[];
+  hasTurns: boolean;
+  answer?: string;
+  onOpenSource: (citation: Citation, claimText: string) => void;
+}) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center justify-between border-b border-white/[0.05] px-5">
@@ -801,7 +874,13 @@ function SourcesPanel({ citations, hasTurns }: { citations: Citation[]; hasTurns
         ) : (
           <div className="space-y-2.5">
             {citations.map((c) => (
-              <CitationRow key={c.index} citation={c} />
+              <CitationRow
+                key={c.index}
+                citation={c}
+                onOpen={() =>
+                  onOpenSource(c, sentenceForMarker(answer ?? "", c.index))
+                }
+              />
             ))}
           </div>
         )}
