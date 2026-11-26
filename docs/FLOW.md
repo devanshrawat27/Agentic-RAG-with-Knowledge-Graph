@@ -171,6 +171,9 @@ deferred to a later enhancement.
 | `POST` | `/api/chat` | run the pipeline for a question |
 | `GET` | `/api/chat/stream` | (optional) SSE status/progress stream |
 | `GET` | `/api/graph` | graph subgraph for visualization |
+| `GET, POST` | `/api/collections` | list / create collections |
+| `PATCH, DELETE` | `/api/collections/{id}` | rename / delete a collection |
+| `POST, DELETE` | `/api/collections/{id}/documents[/{doc_id}]` | add / remove documents |
 
 ## Part D — Evaluation flow (Phase 3)
 
