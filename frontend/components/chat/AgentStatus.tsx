@@ -59,8 +59,9 @@ export function AgentStatus({
     );
   }
 
-  // The pipeline trace is only meaningful when the run actually used documents.
-  if (claims.length === 0 && sources === 0) return null;
+  // The trace only makes sense when a verified run actually produced claims.
+  // History messages don't persist claims, so they correctly show nothing.
+  if (claims.length === 0) return null;
 
   const supported = claims.filter((claim) => claim.supported).length;
   const planned = response.sub_questions?.length ?? 0;
@@ -68,7 +69,7 @@ export function AgentStatus({
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-1.5">
-      <Chip>Planned {planned}</Chip>
+      {planned > 0 && <Chip>Planned {planned}</Chip>}
       <Chip>Hybrid retrieval</Chip>
       <Chip tone={claims.length > 0 && supported === claims.length ? "ok" : "warn"}>
         Verified {supported}/{claims.length}
