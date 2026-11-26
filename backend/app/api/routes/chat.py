@@ -8,6 +8,7 @@ its full message history.
 
 import json
 import logging
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
@@ -83,6 +84,7 @@ def chat(
             result = {**result, "mode": "chat"}
 
     citations = result["citations"]
+    chat_row.updated_at = datetime.now(timezone.utc)
     db.add(Message(chat_id=chat_row.id, role="user", content=payload.question))
     db.add(
         Message(

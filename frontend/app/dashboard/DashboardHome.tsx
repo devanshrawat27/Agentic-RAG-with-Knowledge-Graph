@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { listDocuments, type DocumentItem } from "@/lib/api";
 
 const STATUS_STYLES: Record<string, { label: string; color: string }> = {
+  ready: { label: "Ready", color: "#34d399" },
   processed: { label: "Ready", color: "#34d399" },
   pending: { label: "Processing", color: "#f59e0b" },
   processing: { label: "Processing", color: "#f59e0b" },
