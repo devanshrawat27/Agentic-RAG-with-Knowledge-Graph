@@ -6,11 +6,9 @@ import { motion } from "framer-motion";
 import { AppShell } from "@/components/app/AppShell";
 import {
   changePassword,
-  fetchHealth,
   getMe,
   logout,
   updateProfile,
-  type HealthResponse,
   type UserPublic,
 } from "@/lib/api";
 
@@ -29,7 +27,6 @@ function initialsOf(name: string): string {
 export default function SettingsPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserPublic | null>(null);
-  const [health, setHealth] = useState<HealthResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [name, setName] = useState("");
@@ -48,12 +45,11 @@ export default function SettingsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getMe(), fetchHealth().catch(() => null)])
-      .then(([me, info]) => {
+    getMe()
+      .then((me) => {
         if (cancelled) return;
         setUser(me);
         setName(me.name);
-        setHealth(info);
       })
       .catch((err) => {
         const message = err instanceof Error ? err.message : "";
@@ -151,7 +147,7 @@ export default function SettingsPage() {
             Settings
           </h1>
           <p className="mt-1.5 text-[14px] text-white/55">
-            Manage your account and see how this workspace is configured.
+            Manage your account and security.
           </p>
         </motion.div>
 
@@ -331,39 +327,6 @@ export default function SettingsPage() {
                   {loggingOut ? "Logging out…" : "Log out"}
                 </button>
               </div>
-            </motion.section>
-
-            <motion.section
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.2 }}
-              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5"
-            >
-              <h2 className="text-[15px] font-semibold text-white">
-                Workspace
-              </h2>
-              <dl className="mt-3 grid gap-2 text-[12.5px] sm:grid-cols-2">
-                <div className="flex justify-between gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-                  <dt className="text-white/40">Service</dt>
-                  <dd className="text-white/75">{health?.service ?? "—"}</dd>
-                </div>
-                <div className="flex justify-between gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-                  <dt className="text-white/40">Version</dt>
-                  <dd className="text-white/75">{health?.version ?? "—"}</dd>
-                </div>
-                <div className="flex justify-between gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-                  <dt className="text-white/40">LLM configured</dt>
-                  <dd className="text-white/75">
-                    {health ? (health.llm_configured ? "Yes" : "No") : "—"}
-                  </dd>
-                </div>
-                <div className="flex justify-between gap-3 rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2">
-                  <dt className="text-white/40">Embeddings</dt>
-                  <dd className="text-white/75">
-                    {health?.embedding_provider ?? "—"}
-                  </dd>
-                </div>
-              </dl>
             </motion.section>
           </div>
         )}
