@@ -14,6 +14,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { useResizable } from "@/components/app/useResizable";
 import { DividerHandle } from "@/components/app/DividerHandle";
 import { AgentStatus, VerificationBadge } from "@/components/chat/AgentStatus";
+import { AssistantAvatar } from "@/components/chat/AssistantAvatar";
 
 interface Turn {
   question: string;
@@ -432,11 +433,7 @@ function HeroInput({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/30 bg-gradient-to-br from-cyan-500/15 via-cyan-900/20 to-black text-cyan-300 shadow-[0_0_30px_rgba(6,182,212,0.25)]">
-          <svg className="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4l-6.4 4.8 2.4-7.2-6-4.8h7.6L12 2Z" />
-          </svg>
-        </div>
+        <AssistantAvatar size={56} rounded="rounded-2xl" className="mb-5" />
         <h1 className="text-[30px] font-semibold tracking-tight text-white sm:text-[36px]">
           Ask your documents
         </h1>
@@ -566,11 +563,7 @@ function TurnView({ turn }: { turn: Turn }) {
 
       {/* Assistant answer */}
       <div className="flex gap-3">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-cyan-400/30 bg-gradient-to-br from-cyan-500/15 to-black text-cyan-300">
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2l2.4 7.2H22l-6 4.8 2.4 7.2L12 16.4l-6.4 4.8 2.4-7.2-6-4.8h7.6L12 2Z" />
-          </svg>
-        </div>
+        <AssistantAvatar size={32} />
         <div className="min-w-0 flex-1">
           <AgentStatus loading={turn.loading} response={turn.response} />
 
