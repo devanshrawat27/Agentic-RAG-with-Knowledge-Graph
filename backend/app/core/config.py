@@ -65,6 +65,13 @@ class Settings(BaseSettings):
     app_host: str = "0.0.0.0"
     app_port: int = 8000
     frontend_base_url: str = "http://localhost:3000"
+    # Uploaded source files are kept here (relative paths resolve under backend/).
+    storage_dir: str = "storage"
+
+    @property
+    def storage_path(self) -> Path:
+        path = Path(self.storage_dir)
+        return path if path.is_absolute() else _BACKEND_DIR / path
 
     # --- Auth ---
     # CHANGE THIS in production; keep it out of version control (set in .env).

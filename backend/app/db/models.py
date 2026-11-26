@@ -115,6 +115,9 @@ class Document(Base):
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     entity_count: Mapped[int] = mapped_column(Integer, default=0)
     relationship_count: Mapped[int] = mapped_column(Integer, default=0)
+    file_path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
     collections: Mapped[list["Collection"]] = relationship(

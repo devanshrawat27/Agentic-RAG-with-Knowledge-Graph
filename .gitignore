@@ -34,6 +34,7 @@ Thumbs.db
 *.log
 *.err
 data/
+backend/storage/
 neo4j-data/
 pgdata/
 qdrant-storage/

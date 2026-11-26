@@ -179,6 +179,52 @@ def get_chunk_context(
     return chunks
 
 
+def get_document_chunks(user_id: int, doc_id: str) -> list[dict]:
+    """Return every stored chunk for one document, ordered by chunk index."""
+    client = get_qdrant()
+    name = collection_name(user_id)
+    if not client.collection_exists(name):
+        return []
+
+    scroll_filter = Filter(
+        must=[FieldCondition(key="doc_id", match=MatchValue(value=doc_id))]
+    )
+    chunks: list[dict] = []
+    offset = None
+    while True:
+        points, offset = client.scroll(
+            collection_name=name,
+            scroll_filter=scroll_filter,
+            limit=200,
+            offset=offset,
+            with_payload=True,
+        )
+        for point in points:
+            payload = point.payload or {}
+            chunk_id = payload.get("chunk_id")
+            if not chunk_id:
+                continue
+            try:
+                chunk_index = int(payload.get("chunk_index"))
+            except (TypeError, ValueError):
+                continue
+            chunks.append(
+                {
+                    "chunk_id": chunk_id,
+                    "chunk_index": chunk_index,
+                    "doc_id": payload.get("doc_id"),
+                    "filename": payload.get("filename"),
+                    "text": payload.get("text") or "",
+                    "is_focus": False,
+                }
+            )
+        if offset is None:
+            break
+
+    chunks.sort(key=lambda item: item["chunk_index"])
+    return chunks
+
+
 def delete_document(user_id: int, doc_id: str) -> None:
     from qdrant_client.models import FieldCondition, Filter, MatchValue
 

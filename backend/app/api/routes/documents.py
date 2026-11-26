@@ -6,12 +6,21 @@ slow local LLM.
 """
 
 import logging
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
+from app.core.storage import (
+    delete_document_file,
+    mime_for_suffix,
+    resolve_document_file,
+    save_document_file,
+)
+from app.core.vectorstore import get_document_chunks
 from app.db.models import Document, User
 from app.db.postgres_client import get_db, get_session_factory
 from app.ingestion.loader import SUPPORTED_EXTENSIONS
@@ -66,9 +75,16 @@ async def upload_document(
     db.add(doc)
     db.flush()
 
+    doc_id = uuid.uuid4().hex[:12]
+    stored_path = save_document_file(current.id, doc_id, suffix, data)
+    doc.file_path = stored_path
+    doc.mime_type = mime_for_suffix(suffix)
+    doc.file_size = len(data)
+
     try:
-        prep = prepare_document(current.id, filename, data)
+        prep = prepare_document(current.id, filename, data, doc_id=doc_id)
     except Exception as exc:  # noqa: BLE001
+        delete_document_file(stored_path)
         doc.status = "failed"
         db.commit()
         logger.exception("ingestion failed for %s", filename)
@@ -108,13 +124,86 @@ def list_documents(
         "documents": [
             {
                 "id": d.id,
+                "doc_id": d.doc_id,
                 "filename": d.filename,
                 "status": d.status,
                 "chunk_count": d.chunk_count,
                 "entity_count": d.entity_count,
                 "relationship_count": d.relationship_count,
+                "has_file": bool(d.file_path),
+                "mime_type": d.mime_type,
                 "created_at": d.created_at.isoformat() if d.created_at else None,
             }
             for d in rows
         ]
     }
+
+
+@router.get("/by-doc/{doc_id}")
+def document_meta(
+    doc_id: str,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    document = db.scalar(
+        select(Document).where(
+            Document.user_id == current.id, Document.doc_id == doc_id
+        )
+    )
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return {
+        "id": document.id,
+        "doc_id": document.doc_id,
+        "filename": document.filename,
+        "status": document.status,
+        "chunk_count": document.chunk_count,
+        "entity_count": document.entity_count,
+        "relationship_count": document.relationship_count,
+        "has_file": bool(document.file_path),
+        "mime_type": document.mime_type,
+        "file_size": document.file_size,
+        "created_at": (
+            document.created_at.isoformat() if document.created_at else None
+        ),
+    }
+
+
+@router.get("/by-doc/{doc_id}/file")
+def document_file(
+    doc_id: str,
+    current: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    document = db.scalar(
+        select(Document).where(
+            Document.user_id == current.id, Document.doc_id == doc_id
+        )
+    )
+    if document is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    path = resolve_document_file(document.file_path)
+    if path is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Original file is not stored for this document",
+        )
+
+    return FileResponse(
+        path,
+        media_type=document.mime_type or "application/octet-stream",
+        filename=document.filename,
+        content_disposition_type="inline",
+    )
+
+
+@router.get("/by-doc/{doc_id}/chunks")
+def document_chunks(
+    doc_id: str,
+    current: User = Depends(get_current_user),
+) -> dict:
+    chunks = get_document_chunks(current.id, doc_id)
+    if not chunks:
+        raise HTTPException(status_code=404, detail="Document chunks not found")
+    return {"doc_id": doc_id, "chunks": chunks}
