@@ -1,4 +1,4 @@
-const API_BASE_URL =
+export const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
 export interface HealthResponse {
@@ -143,12 +143,43 @@ export function resetPassword(
 
 export interface DocumentItem {
   id: number;
+  doc_id?: string | null;
   filename: string;
   status: string;
   chunk_count: number;
   entity_count: number;
   relationship_count: number;
+  has_file?: boolean;
+  mime_type?: string | null;
   created_at: string | null;
+}
+
+export interface DocumentMeta {
+  id: number;
+  doc_id: string;
+  filename: string;
+  status: string;
+  chunk_count: number;
+  entity_count: number;
+  relationship_count: number;
+  has_file: boolean;
+  mime_type: string | null;
+  file_size: number | null;
+  created_at: string | null;
+}
+
+export function getDocumentMeta(docId: string): Promise<DocumentMeta> {
+  return request(`/api/documents/by-doc/${encodeURIComponent(docId)}`);
+}
+
+export function getDocumentChunks(
+  docId: string,
+): Promise<{ doc_id: string; chunks: SourceChunk[] }> {
+  return request(`/api/documents/by-doc/${encodeURIComponent(docId)}/chunks`);
+}
+
+export function documentFileUrl(docId: string): string {
+  return `${API_BASE_URL}/api/documents/by-doc/${encodeURIComponent(docId)}/file`;
 }
 
 export interface UploadResult {

@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  documentFileUrl,
   getChunkContext,
+  getDocumentChunks,
+  getDocumentMeta,
   type Citation,
+  type DocumentMeta,
   type SourceChunk,
   type SourceChunkContext,
 } from "@/lib/api";
@@ -86,6 +90,11 @@ export function SourceViewer({
   const [data, setData] = useState<SourceChunkContext | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [meta, setMeta] = useState<DocumentMeta | null>(null);
+  const [showFull, setShowFull] = useState(false);
+  const [fullChunks, setFullChunks] = useState<SourceChunk[]>([]);
+  const [loadingFull, setLoadingFull] = useState(false);
+  const focusRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,6 +128,21 @@ export function SourceViewer({
   }, [citation.chunk_id]);
 
   useEffect(() => {
+    if (!citation.doc_id) return;
+    let cancelled = false;
+    getDocumentMeta(citation.doc_id)
+      .then((info) => {
+        if (!cancelled) setMeta(info);
+      })
+      .catch(() => {
+        /* metadata is optional */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [citation.doc_id]);
+
+  useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
@@ -126,16 +150,48 @@ export function SourceViewer({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  const focusChunk: SourceChunk | null = useMemo(
-    () =>
-      data?.chunks.find((chunk) => chunk.chunk_id === data.focus) ?? null,
-    [data],
-  );
+  const displayChunks = showFull ? fullChunks : (data?.chunks ?? []);
+  const focusChunk: SourceChunk | null =
+    displayChunks.find((chunk) => chunk.chunk_id === citation.chunk_id) ??
+    data?.chunks.find((chunk) => chunk.chunk_id === data?.focus) ??
+    null;
+
+  useEffect(() => {
+    if (focusRef.current) {
+      focusRef.current.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+  }, [data, showFull, fullChunks]);
 
   const highlight = useMemo(() => {
     if (!focusChunk) return null;
     return bestSentence(focusChunk.text, claimText || citation.snippet);
   }, [focusChunk, claimText, citation.snippet]);
+
+  async function toggleFull() {
+    if (!citation.doc_id) return;
+    if (showFull) {
+      setShowFull(false);
+      return;
+    }
+    if (fullChunks.length > 0) {
+      setShowFull(true);
+      return;
+    }
+
+    setLoadingFull(true);
+    setError("");
+    try {
+      const result = await getDocumentChunks(citation.doc_id);
+      setFullChunks(result.chunks);
+      setShowFull(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load full document",
+      );
+    } finally {
+      setLoadingFull(false);
+    }
+  }
 
   return (
     <div
@@ -158,13 +214,38 @@ export function SourceViewer({
               {citation.chunk_id ?? "chunk id unavailable"}
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.08] text-white/45 transition hover:text-white"
-            aria-label="Close source preview"
-          >
-            ×
-          </button>
+          <div className="flex flex-shrink-0 items-center gap-2">
+            {meta?.has_file && citation.doc_id && (
+              <a
+                href={documentFileUrl(citation.doc_id)}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 py-1.5 text-[11.5px] font-medium text-white/65 transition hover:text-white"
+              >
+                Open original
+              </a>
+            )}
+            {citation.doc_id && (
+              <button
+                onClick={toggleFull}
+                disabled={loadingFull}
+                className="rounded-lg border border-white/[0.1] bg-white/[0.03] px-2.5 py-1.5 text-[11.5px] font-medium text-white/65 transition hover:text-white disabled:opacity-40"
+              >
+                {loadingFull
+                  ? "Loading…"
+                  : showFull
+                    ? "Chunk view"
+                    : "Full document"}
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.08] text-white/45 transition hover:text-white"
+              aria-label="Close source preview"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {claimText && (
@@ -190,31 +271,40 @@ export function SourceViewer({
             </p>
           ) : (
             <div className="space-y-3">
-              {data?.chunks.map((chunk) => (
-                <div
-                  key={chunk.chunk_id}
-                  className={`rounded-xl border p-4 ${
-                    chunk.is_focus
-                      ? "border-amber-400/25 bg-amber-500/[0.03]"
-                      : "border-white/[0.05] bg-white/[0.015] opacity-60"
-                  }`}
-                >
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-white/30">
-                    Chunk {chunk.chunk_index}
-                    {chunk.is_focus ? " · matched source" : " · context"}
-                  </p>
-                  <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-white/80">
-                    {chunk.is_focus ? (
-                      <Highlighted text={chunk.text} highlight={highlight} />
-                    ) : (
-                      chunk.text
-                    )}
-                  </p>
-                </div>
-              ))}
+              {displayChunks.map((chunk) => {
+                const isFocus = chunk.chunk_id === citation.chunk_id;
+                return (
+                  <div
+                    key={chunk.chunk_id}
+                    ref={isFocus ? focusRef : undefined}
+                    className={`rounded-xl border p-4 ${
+                      isFocus
+                        ? "border-amber-400/25 bg-amber-500/[0.03]"
+                        : "border-white/[0.05] bg-white/[0.015] opacity-60"
+                    }`}
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/30">
+                      Chunk {chunk.chunk_index}
+                      {isFocus
+                        ? " · matched source"
+                        : showFull
+                          ? ""
+                          : " · context"}
+                    </p>
+                    <p className="mt-2 whitespace-pre-wrap text-[13px] leading-relaxed text-white/80">
+                      {isFocus ? (
+                        <Highlighted text={chunk.text} highlight={highlight} />
+                      ) : (
+                        chunk.text
+                      )}
+                    </p>
+                  </div>
+                );
+              })}
               <p className="pt-1 text-[11px] text-white/30">
-                Showing the ingested source chunk and its neighbours. The
-                highlighted sentence is the best match for the answer claim.
+                {showFull
+                  ? `Showing all ${displayChunks.length} chunks; the matched chunk is highlighted.`
+                  : "Showing the ingested source chunk and its neighbours. The highlighted sentence is the best match for the answer claim."}
               </p>
             </div>
           )}
