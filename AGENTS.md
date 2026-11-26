@@ -275,8 +275,10 @@ E0 baseline, and the chat UI, resizable history sidebar, citations/sources panel
 and fixed-sequence agent status already exist (E1/E2/E4). E3 is done
 (`GET /api/graph` + interactive `react-force-graph` page). Collections and
 Settings are now real pages, and **chat can be scoped to a collection** —
-retrieval filters Qdrant/Neo4j by that collection's `doc_id`s. Next: the
-3-stage evaluation (Phase F) per `docs/IMPLEMENTATION_PLAN.md`.
+retrieval filters Qdrant/Neo4j by that collection's `doc_id`s. Citation rows now
+open the exact ingested source chunk (with neighbours) and highlight the
+best-matching sentence. Next: the 3-stage evaluation (Phase F) per
+`docs/IMPLEMENTATION_PLAN.md`.
 
 ## Open items (resolve when reached; no need to block)
 
