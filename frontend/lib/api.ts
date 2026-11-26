@@ -60,6 +60,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new Error(detail);
   }
+  if (res.status === 204) {
+    return undefined as T;
+  }
   return res.json() as Promise<T>;
 }
 
@@ -160,6 +163,80 @@ export async function uploadDocument(file: File): Promise<UploadResult> {
 
 export function listDocuments(): Promise<{ documents: DocumentItem[] }> {
   return request("/api/documents");
+}
+
+export interface CollectionItem {
+  id: number;
+  name: string;
+  description: string;
+  document_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CollectionDocument {
+  id: number;
+  filename: string;
+  status: string;
+  chunk_count: number;
+  entity_count: number;
+  relationship_count: number;
+  created_at: string | null;
+}
+
+export interface CollectionDetail extends CollectionItem {
+  documents: CollectionDocument[];
+}
+
+export function listCollections(): Promise<CollectionItem[]> {
+  return request("/api/collections");
+}
+
+export function createCollection(
+  name: string,
+  description = "",
+): Promise<CollectionItem> {
+  return request("/api/collections", {
+    method: "POST",
+    body: JSON.stringify({ name, description }),
+  });
+}
+
+export function updateCollection(
+  collectionId: number,
+  data: { name?: string; description?: string },
+): Promise<CollectionItem> {
+  return request(`/api/collections/${collectionId}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
+}
+
+export function deleteCollection(collectionId: number): Promise<void> {
+  return request(`/api/collections/${collectionId}`, { method: "DELETE" });
+}
+
+export function getCollection(collectionId: number): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}`);
+}
+
+export function addCollectionDocument(
+  collectionId: number,
+  documentId: number,
+): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}/documents`, {
+    method: "POST",
+    body: JSON.stringify({ document_id: documentId }),
+  });
+}
+
+export function removeCollectionDocument(
+  collectionId: number,
+  documentId: number,
+): Promise<CollectionDetail> {
+  return request(`/api/collections/${collectionId}/documents/${documentId}`, {
+    method: "DELETE",
+  });
 }
 
 export interface GraphNode {
