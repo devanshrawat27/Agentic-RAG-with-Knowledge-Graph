@@ -139,7 +139,7 @@ function ChatPage() {
               response: {
                 answer: m.content,
                 citations: m.citations,
-                mode: "verified",
+                mode: "saved",
                 chat_id: detail.id,
               },
             });
